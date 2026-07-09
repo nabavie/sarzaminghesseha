@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('بررسی قصه‌ها')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <h1 class="h3 mb-4">📚 بررسی قصه‌ها</h1>
+
+    <div class="alert alert-success" th:if="${param.approved != null}">قصه تأیید و منتشر شد. ✔</div>
+    <div class="alert alert-secondary" th:if="${param.rejected != null}">قصه رد شد و به قصه‌گو اطلاع داده می‌شود.</div>
+
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status.name() == 'PENDING'} ? 'active'"
+               th:href="@{/admin/tales(status='PENDING')}">
+                در انتظار (<span th:text="${@persianDate.digits(pendingCount)}">۰</span>)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status.name() == 'APPROVED'} ? 'active'"
+               th:href="@{/admin/tales(status='APPROVED')}">
+                منتشرشده (<span th:text="${@persianDate.digits(approvedCount)}">۰</span>)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status.name() == 'REJECTED'} ? 'active'"
+               th:href="@{/admin/tales(status='REJECTED')}">
+                ردشده (<span th:text="${@persianDate.digits(rejectedCount)}">۰</span>)
+            </a>
+        </li>
+    </ul>
+
+    <div class="alert alert-info" th:if="${talesPage.isEmpty()}">قصه‌ای در این فهرست نیست.</div>
+
+    <div class="card" th:unless="${talesPage.isEmpty()}">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>نام قصه</th>
+                    <th>قصه‌گو</th>
+                    <th>تاریخ</th>
+                    <th>دسته‌ها</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="tale : ${talesPage.content}">
+                    <td class="fw-bold" th:text="${tale.title}">عنوان</td>
+                    <td th:text="${tale.storyteller.displayName}">قصه‌گو</td>
+                    <td th:text="${@persianDate.format(tale.createdAt)}">تاریخ</td>
+                    <td>
+                        <span class="badge text-bg-light border" th:each="cat : ${tale.categories}"
+                              th:text="${cat.name}">دسته</span>
+                    </td>
+                    <td class="text-start">
+                        <a th:href="@{'/admin/tales/' + ${tale.id}}" class="btn btn-primary btn-sm">بررسی</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav class="mt-4" th:if="${talesPage.totalPages > 1}" aria-label="صفحه‌ها">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, talesPage.totalPages - 1)}"
+                th:classappend="${i == talesPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/admin/tales(status=${status},page=${i})}"
+                   th:text="${@persianDate.digits(i + 1)}">۱</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

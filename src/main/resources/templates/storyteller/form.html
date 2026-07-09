@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${tale == null ? 'قصهٔ تازه' : 'ویرایش قصه'})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4 p-md-5">
+                <h1 class="h3 mb-1" th:text="${tale == null ? '✨ قصهٔ تازه بگو' : '✏️ ویرایش قصه'}">قصهٔ تازه</h1>
+                <p class="text-muted mb-4">قصهٔ شما بعد از تأیید مدیر برای بچه‌ها منتشر می‌شود.</p>
+
+                <form th:action="${tale == null} ? @{/storyteller/tales} : @{'/storyteller/tales/' + ${tale.id}}"
+                      th:object="${form}" method="post" enctype="multipart/form-data">
+
+                    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                        <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">خطا</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="title" class="form-label fw-bold fs-5">۱. نام قصه</label>
+                        <input type="text" class="form-control form-control-lg" id="title"
+                               th:field="*{title}" th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'"
+                               placeholder="مثلاً: کدو قلقله‌زن">
+                        <div class="invalid-feedback" th:errors="*{title}"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-bold fs-5">۲. دربارهٔ قصه</label>
+                        <textarea class="form-control form-control-lg" id="description" rows="4"
+                                  th:field="*{description}" th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
+                                  placeholder="این قصه دربارهٔ چیست؟ مال کدام شهر یا روستاست؟ از چه کسی آن را شنیده‌اید؟"></textarea>
+                        <div class="invalid-feedback" th:errors="*{description}"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-label fw-bold fs-5">۳. دستهٔ قصه</div>
+                        <div class="text-danger small mb-2" th:if="${#fields.hasErrors('categoryIds')}"
+                             th:errors="*{categoryIds}"></div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <!-- no th:field here: it injects a hidden input between the checkbox and the
+                                 label, which breaks Bootstrap's .btn-check:checked + .btn styling -->
+                            <div th:each="cat : ${categories}">
+                                <input type="checkbox" class="btn-check" name="categoryIds"
+                                       th:value="${cat.id}" th:id="'cat-' + ${cat.id}"
+                                       th:checked="${form.categoryIds != null && form.categoryIds.contains(cat.id)}">
+                                <label class="btn btn-outline-primary" th:for="'cat-' + ${cat.id}"
+                                       th:text="${cat.name}">دسته</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-label fw-bold fs-5">۴. صدای قصه 🎙️</div>
+                        <div class="text-danger small mb-2" th:if="${#fields.hasErrors('audio')}"
+                             th:errors="*{audio}"></div>
+
+                        <div class="alert alert-secondary py-2" th:if="${tale != null}">
+                            صدای فعلی قصه:
+                            <audio controls preload="none" controlslist="nodownload"
+                                   th:src="@{|/tales/${tale.id}/audio|(t=${@mediaToken.issue(tale.id)})}"
+                                   class="mt-2"></audio>
+                            <div class="small text-muted mt-1">اگر صدای تازه‌ای نفرستید، همین صدا می‌ماند.</div>
+                        </div>
+
+                        <ul class="nav nav-pills mb-3" id="audioTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="upload-tab" data-bs-toggle="pill"
+                                        data-bs-target="#uploadPane" type="button" role="tab">📁 انتخاب فایل صوتی</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="record-tab" data-bs-toggle="pill"
+                                        data-bs-target="#recordPane" type="button" role="tab">🔴 ضبط صدا همین‌جا</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content border rounded-3 p-3 bg-light">
+                            <div class="tab-pane fade show active" id="uploadPane" role="tabpanel">
+                                <label for="audio" class="form-label">فایل صدای قصه را انتخاب کنید (mp3 و مانند آن):</label>
+                                <input type="file" class="form-control form-control-lg" id="audio"
+                                       th:field="*{audio}" accept="audio/*">
+                            </div>
+                            <div class="tab-pane fade text-center" id="recordPane" role="tabpanel">
+                                <p class="mb-3">دکمهٔ قرمز را بزنید و قصه را بگویید؛ وقتی تمام شد دوباره همان دکمه را بزنید.</p>
+                                <button type="button" class="record-btn" id="recordBtn" aria-label="ضبط صدا">🎙️</button>
+                                <div class="fs-4 mt-2" id="recordTimer">۰:۰۰</div>
+                                <div class="text-muted small" id="recordStatus">آماده برای ضبط</div>
+                                <div class="mt-3 d-none" id="previewWrap">
+                                    <div class="fw-bold mb-1">صدای ضبط‌شده را گوش کنید:</div>
+                                    <audio controls id="previewAudio"></audio>
+                                    <div class="small text-success mt-1">اگر راضی بودید، فرم را ثبت کنید؛ همین صدا فرستاده می‌شود.</div>
+                                </div>
+                                <div class="alert alert-danger mt-3 d-none" id="recordError"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="cover" class="form-label fw-bold fs-5">۵. عکس قصه (دلخواه)</label>
+                        <input type="file" class="form-control form-control-lg" id="cover"
+                               th:field="*{cover}" accept="image/*">
+                        <div class="form-text">اگر عکسی ندارید اشکالی ندارد؛ خودمان یک تصویر قشنگ نشان می‌دهیم.</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warm btn-big flex-grow-1"
+                                th:text="${tale == null ? 'فرستادن قصه 🌟' : 'ذخیره و فرستادن برای بررسی'}">فرستادن</button>
+                        <a th:href="@{/storyteller/tales}" class="btn btn-outline-secondary btn-big">انصراف</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script th:src="@{/js/recorder.js}"></script>
+</body>
+</html>

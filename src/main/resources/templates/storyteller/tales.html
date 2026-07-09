@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('قصه‌های من')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <h1 class="h3 mb-0">🎙️ قصه‌های من</h1>
+        <a th:href="@{/storyteller/tales/new}" class="btn btn-warm btn-big">قصهٔ تازه بگو ✨</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${param.created != null}">
+        قصهٔ شما فرستاده شد! بعد از تأیید مدیر، برای همه منتشر می‌شود. 🌟
+    </div>
+    <div class="alert alert-success" th:if="${param.updated != null}">
+        قصهٔ شما ویرایش شد و دوباره برای بررسی فرستاده شد.
+    </div>
+
+    <div class="alert alert-info" th:if="${#lists.isEmpty(tales)}">
+        هنوز قصه‌ای نگفته‌اید. اولین قصهٔ خود را با دکمهٔ «قصهٔ تازه بگو» ثبت کنید!
+    </div>
+
+    <div class="row g-4" th:unless="${#lists.isEmpty(tales)}">
+        <div class="col-md-6 col-lg-4" th:each="tale : ${tales}">
+            <div class="card tale-card">
+                <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
+                     class="tale-cover" alt="تصویر قصه">
+                <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h2 class="h5 card-title mb-0" th:text="${tale.title}">عنوان</h2>
+                        <span class="badge" th:classappend="'text-bg-' + ${tale.status.badgeClass}"
+                              th:text="${tale.status.persianName}">وضعیت</span>
+                    </div>
+                    <p class="text-muted small mb-2" th:text="${@persianDate.format(tale.createdAt)}">تاریخ</p>
+                    <div class="alert alert-warning small py-2" th:if="${tale.status.name() == 'REJECTED' && tale.reviewNote != null}">
+                        <strong>پیام مدیر:</strong>
+                        <span th:text="${tale.reviewNote}">یادداشت</span>
+                    </div>
+                    <audio controls preload="none" controlslist="nodownload"
+                           th:src="@{|/tales/${tale.id}/audio|(t=${@mediaToken.issue(tale.id)})}" class="mb-3"></audio>
+                    <div class="d-flex gap-2">
+                        <a th:if="${tale.status.name() != 'APPROVED'}"
+                           th:href="@{'/storyteller/tales/' + ${tale.id} + '/edit'}"
+                           class="btn btn-outline-primary btn-sm">ویرایش</a>
+                        <a th:if="${tale.status.name() == 'APPROVED'}"
+                           th:href="@{'/tales/' + ${tale.id}}"
+                           class="btn btn-outline-success btn-sm">دیدن صفحهٔ قصه</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

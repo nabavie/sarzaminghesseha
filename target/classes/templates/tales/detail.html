@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(${tale.title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+
+    <div class="alert alert-warning" th:if="${tale.status.name() != 'APPROVED'}">
+        این قصه هنوز منتشر نشده است (<span th:text="${tale.status.persianName}">وضعیت</span>)
+        و فقط شما و مدیر آن را می‌بینید.
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card p-4 p-md-5">
+                <div class="row g-4 align-items-start">
+                    <div class="col-md-4" th:if="${tale.coverPath != null}">
+                        <img th:src="@{'/media/covers/' + ${tale.coverPath}}" class="rounded-4 w-100" alt="تصویر قصه">
+                    </div>
+                    <div th:class="${tale.coverPath != null ? 'col-md-8' : 'col-12'}">
+                        <h1 class="h2 mb-2" th:text="${tale.title}">عنوان قصه</h1>
+                        <p class="text-muted mb-1">
+                            🎙️ قصه‌گو: <strong th:text="${tale.storyteller.displayName}">نام</strong>
+                        </p>
+                        <p class="text-muted mb-3" th:text="'📅 ' + ${@persianDate.format(tale.createdAt)}">تاریخ</p>
+                        <div class="mb-3">
+                            <a th:each="cat : ${tale.categories}" th:href="@{/tales(category=${cat.id})}"
+                               class="category-chip" th:text="${cat.name}">دسته</a>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <span class="stars stars-sm" aria-hidden="true">
+                                <span class="star" th:each="i : ${#numbers.sequence(1,5)}"
+                                      th:classappend="${i <= avgRating + 0.5} ? 'filled'">★</span>
+                            </span>
+                            <span class="text-muted small">
+                                <span th:text="${@persianDate.digits(#numbers.formatDecimal(avgRating, 1, 1))}">۰</span>
+                                از ۵ (<span th:text="${@persianDate.digits(ratingCount)}">۰</span> امتیاز)
+                            </span>
+                            <form sec:authorize="isAuthenticated()" th:action="@{'/tales/' + ${tale.id} + '/favorite'}"
+                                  method="post" class="m-0">
+                                <button type="submit" class="btn btn-sm"
+                                        th:classappend="${isFavorite} ? 'btn-danger' : 'btn-outline-danger'"
+                                        th:text="${isFavorite} ? '❤️ در قصه‌های من است' : '🤍 افزودن به قصه‌های من'">
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="bg-light rounded-3 p-3 mb-4">
+                    <div class="fw-bold mb-2">🎧 قصه را گوش کن:</div>
+                    <audio id="talePlayer" controls preload="metadata"
+                           controlslist="nodownload"
+                           oncontextmenu="return false"
+                           th:src="@{|/tales/${tale.id}/audio|(t=${@mediaToken.issue(tale.id)})}"
+                           th:data-tale-id="${tale.id}"
+                           th:data-resume-seconds="${resumeSeconds}"
+                           th:data-authenticated="${currentUser != null}"></audio>
+                    <div class="small text-muted mt-1" th:if="${resumeSeconds > 0}">
+                        از جایی که بودی ادامه می‌دهیم ▶️
+                    </div>
+                </div>
+
+                <h2 class="h5">دربارهٔ این قصه</h2>
+                <p style="white-space: pre-line;" th:text="${tale.description}">توضیح</p>
+
+                <div sec:authorize="isAuthenticated()" class="border rounded-3 p-3 mt-4 text-center">
+                    <div class="fw-bold mb-2">به این قصه چند ستاره می‌دهی؟</div>
+                    <form th:action="@{'/tales/' + ${tale.id} + '/rating'}" method="post" class="m-0">
+                        <div class="stars interactive">
+                            <button type="submit" name="stars" th:value="${i}"
+                                    th:each="i : ${#numbers.sequence(1,5)}"
+                                    class="star" th:classappend="${userStars != null && i <= userStars} ? 'filled'"
+                                    th:title="${@persianDate.digits(i)} + ' ستاره'">★</button>
+                        </div>
+                    </form>
+                    <div class="small text-muted mt-1" th:if="${userStars != null}">
+                        امتیاز شما: <span th:text="${@persianDate.digits(userStars)}">۰</span> ستاره — می‌توانی تغییرش بدهی
+                    </div>
+                </div>
+                <div sec:authorize="!isAuthenticated()" class="alert alert-light border mt-4 text-center">
+                    برای امتیاز دادن و نظر نوشتن، <a th:href="@{/login}">وارد شو</a> یا
+                    <a th:href="@{/register}">ثبت‌نام کن</a>.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card p-4" id="comments">
+                <h2 class="h5 mb-3">💬 نظرها</h2>
+
+                <div class="alert alert-danger py-2" th:if="${commentError != null}" th:text="${commentError}">خطا</div>
+
+                <form sec:authorize="isAuthenticated()" th:action="@{'/tales/' + ${tale.id} + '/comments'}"
+                      method="post" class="mb-4">
+                    <textarea class="form-control mb-2" name="content" rows="2" maxlength="1000"
+                              placeholder="نظر خود را بنویس..." required></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">فرستادن نظر</button>
+                </form>
+
+                <div class="text-muted" th:if="${#lists.isEmpty(comments)}">
+                    هنوز نظری نوشته نشده؛ اولین نفر باش!
+                </div>
+
+                <div class="comment mb-4" th:each="comment : ${comments}">
+                    <div class="d-flex gap-2 align-items-center mb-1">
+                        <img th:if="${comment.author.avatarPath != null}"
+                             th:src="@{'/media/avatars/' + ${comment.author.avatarPath}}"
+                             class="comment-avatar" alt="">
+                        <div th:if="${comment.author.avatarPath == null}" class="comment-avatar-placeholder">🙂</div>
+                        <div>
+                            <div class="fw-bold" th:text="${comment.author.displayName}">نویسنده</div>
+                            <div class="text-muted small" th:text="${@persianDate.format(comment.createdAt)}">تاریخ</div>
+                        </div>
+                    </div>
+                    <p class="mb-2" th:text="${comment.content}">متن نظر</p>
+
+                    <details sec:authorize="isAuthenticated()">
+                        <summary class="small text-primary" style="cursor: pointer;">پاسخ دادن</summary>
+                        <form th:action="@{'/tales/' + ${tale.id} + '/comments'}" method="post" class="mt-2">
+                            <input type="hidden" name="parentId" th:value="${comment.id}">
+                            <textarea class="form-control form-control-sm mb-2" name="content" rows="2"
+                                      maxlength="1000" placeholder="پاسخ خود را بنویس..." required></textarea>
+                            <button type="submit" class="btn btn-outline-primary btn-sm">فرستادن پاسخ</button>
+                        </form>
+                    </details>
+
+                    <div class="comment comment-reply mt-3" th:each="reply : ${comment.replies}">
+                        <div class="d-flex gap-2 align-items-center mb-1">
+                            <img th:if="${reply.author.avatarPath != null}"
+                                 th:src="@{'/media/avatars/' + ${reply.author.avatarPath}}"
+                                 class="comment-avatar" alt="">
+                            <div th:if="${reply.author.avatarPath == null}" class="comment-avatar-placeholder">🙂</div>
+                            <div>
+                                <div class="fw-bold" th:text="${reply.author.displayName}">نویسنده</div>
+                                <div class="text-muted small" th:text="${@persianDate.format(reply.createdAt)}">تاریخ</div>
+                            </div>
+                        </div>
+                        <p class="mb-0" th:text="${reply.content}">متن پاسخ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script th:src="@{/js/player.js}"></script>
+</body>
+</html>

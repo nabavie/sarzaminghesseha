@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('مدیریت دسته‌ها')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <h1 class="h3 mb-4">🏷️ مدیریت دسته‌ها</h1>
+
+            <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
+            <div class="alert alert-danger" th:if="${error != null}" th:text="${error}">خطا</div>
+
+            <div class="card p-4 mb-4">
+                <form th:action="@{/admin/categories}" method="post" class="row g-2">
+                    <div class="col">
+                        <input type="text" class="form-control form-control-lg" name="name"
+                               placeholder="نام دستهٔ تازه، مثلاً: قصه‌های شب" required>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary btn-lg">افزودن</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        th:each="cat : ${categories}">
+                        <span class="fw-bold" th:text="${cat.name}">دسته</span>
+                        <form th:action="@{'/admin/categories/' + ${cat.id} + '/delete'}" method="post"
+                              onsubmit="return confirm('این دسته حذف شود؟ قصه‌ها حذف نمی‌شوند؛ فقط از این دسته درمی‌آیند.');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">حذف</button>
+                        </form>
+                    </li>
+                </ul>
+                <div class="p-3 text-muted" th:if="${#lists.isEmpty(categories)}">هنوز دسته‌ای ساخته نشده است.</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

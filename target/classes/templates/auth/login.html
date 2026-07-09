@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('ورود')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card p-4 p-md-5">
+                <h1 class="h3 text-center mb-4">🔑 ورود به سرزمین قصه‌ها</h1>
+
+                <div class="alert alert-danger" th:if="${param.error != null}">
+                    نام کاربری یا رمز عبور درست نیست. دوباره تلاش کنید.
+                </div>
+                <div class="alert alert-warning" th:if="${param.disabled != null}">
+                    🚫 حساب کاربری شما توسط مدیر غیرفعال شده است و فعلاً نمی‌توانید وارد شوید.
+                    برای فعال‌سازی دوباره با مدیر سایت تماس بگیرید.
+                </div>
+                <div class="alert alert-danger" th:if="${param.banned != null}">
+                    ⛔ به دلیل تلاش‌های ناموفق زیاد، ورود شما به مدت ۱۰ دقیقه مسدود شده است.
+                    کمی بعد دوباره تلاش کنید.
+                </div>
+                <div class="alert alert-success" th:if="${param.registered != null}">
+                    ثبت‌نام شما انجام شد! حالا وارد شوید.
+                </div>
+
+                <form th:action="@{/login}" method="post" novalidate>
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-bold">نام کاربری</label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username"
+                               autofocus autocomplete="username" required>
+                        <div class="invalid-feedback">لطفاً نام کاربری خود را بنویسید</div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-bold">رمز عبور</label>
+                        <input type="password" class="form-control form-control-lg" id="password" name="password"
+                               autocomplete="current-password" required>
+                        <div class="invalid-feedback">لطفاً رمز عبور خود را بنویسید</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-big w-100">ورود</button>
+                </form>
+
+                <p class="text-center mt-3 mb-0">
+                    <a th:href="@{/forgot-password}" class="small">رمز عبور را فراموش کرده‌اید؟</a>
+                </p>
+                <p class="text-center mt-3 mb-0">
+                    هنوز عضو نشده‌اید؟
+                    <a th:href="@{/register}" class="fw-bold">ثبت‌نام کنید</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script>
+    (function () {
+        var form = document.querySelector('form[novalidate]');
+        form.addEventListener('submit', function (event) {
+            var valid = true;
+            form.querySelectorAll('input[required]').forEach(function (input) {
+                var empty = input.value.trim() === '';
+                input.classList.toggle('is-invalid', empty);
+                if (empty) valid = false;
+            });
+            if (!valid) {
+                event.preventDefault();
+                form.querySelector('.is-invalid').focus();
+            }
+        });
+        form.querySelectorAll('input[required]').forEach(function (input) {
+            input.addEventListener('input', function () {
+                input.classList.remove('is-invalid');
+            });
+        });
+    })();
+</script>
+</body>
+</html>

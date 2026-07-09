@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(java *)",
+      "PowerShell(pip install *)",
+      "PowerShell(python \"C:\\\\Users\\\\nabav\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-nabav-OneDrive-Desktop-claude-myapp\\\\b72a9f8a-e5d9-4430-ac88-d29b90cbde92\\\\scratchpad\\\\gen_tales.py\")",
+      "PowerShell(mvn *)",
+      "PowerShell(Test-NetConnection *)",
+      "PowerShell(mvn spring-boot:run *)",
+      "PowerShell($deadline=\\(Get-Date\\).AddSeconds\\(90\\); do { Start-Sleep -Seconds 5; $up = Test-NetConnection -ComputerName localhost -Port 8081 -InformationLevel Quiet -WarningAction SilentlyContinue } until \\($up -or \\(Get-Date\\) -gt $deadline\\); $up)",
+      "PowerShell(Select-String -Path \"C:\\\\Users\\\\nabav\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-nabav-OneDrive-Desktop-claude-myapp\\\\b72a9f8a-e5d9-4430-ac88-d29b90cbde92\\\\tasks\\\\bt30wu6bo.output\" -Pattern \"Seeded|Started MyappApplication|ERROR\" | ForEach-Object { $_.Line.Trim\\(\\) } | Select-Object -Last 20)",
+      "PowerShell(mysql *)",
+      "PowerShell(Copy-Item *)",
+      "Bash(curl -s -b admin.jar http://localhost:8081/admin/users -o users3.html)",
+      "Bash(curl -s -b admin.jar \"http://localhost:8081/admin/users\" -o selfcheck.html)",
+      "Bash(curl -s \"http://localhost:8081/tales\" -o p0.html -w 'page0: %{http_code}\\\\n')",
+      "Bash(curl -s \"http://localhost:8081/tales?page=2\" -o p2.html -w 'page2: %{http_code}\\\\n')",
+      "Bash(grep -aB1 '>بعدی<' p2.html)",
+      "Bash(curl -s \"http://localhost:8081/tales?q=%D8%AE%D8%B1&category=2&page=1\" -o pq.html -w 'filtered page: %{http_code}\\\\n')",
+      "Bash(curl -s \"http://localhost:8081/tales?category=2\" -o pcat.html -w 'cat2: %{http_code}\\\\n')",
+      "Bash(curl -s -o /dev/null -w '/tales after revert: %{http_code}\\\\n' \"http://localhost:8081/tales\")",
+      "Bash(curl -s \"http://localhost:8081/tales\")",
+      "PowerShell(docker compose config *)",
+      "PowerShell(docker build *)",
+      "PowerShell(docker compose *)",
+      "PowerShell(docker pull *)",
+      "Bash(docker compose *)",
+      "Bash(docker rmi *)"
+    ]
+  }
+}

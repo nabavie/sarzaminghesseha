@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('مدیریت نظرها')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <h1 class="h3 mb-4">💬 مدیریت نظرها</h1>
+
+    <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
+
+    <div class="alert alert-info" th:if="${commentsPage.isEmpty()}">نظری ثبت نشده است.</div>
+
+    <div class="card" th:unless="${commentsPage.isEmpty()}">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>نویسنده</th>
+                    <th>نظر</th>
+                    <th>قصه</th>
+                    <th>تاریخ</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="comment : ${commentsPage.content}">
+                    <td th:text="${comment.author.displayName}">نویسنده</td>
+                    <td>
+                        <span class="badge text-bg-light border" th:if="${comment.parent != null}">پاسخ</span>
+                        <span th:text="${comment.content}">متن</span>
+                    </td>
+                    <td>
+                        <a th:href="@{'/tales/' + ${comment.tale.id}}" th:text="${comment.tale.title}">قصه</a>
+                    </td>
+                    <td th:text="${@persianDate.format(comment.createdAt)}">تاریخ</td>
+                    <td class="text-start">
+                        <form th:action="@{'/admin/comments/' + ${comment.id} + '/delete'}" method="post"
+                              onsubmit="return confirm('این نظر حذف شود؟ پاسخ‌های آن هم حذف می‌شوند.');">
+                            <input type="hidden" name="page" th:value="${commentsPage.number}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav class="mt-4" th:if="${commentsPage.totalPages > 1}" aria-label="صفحه‌ها">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, commentsPage.totalPages - 1)}"
+                th:classappend="${i == commentsPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/admin/comments(page=${i})}"
+                   th:text="${@persianDate.digits(i + 1)}">۱</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

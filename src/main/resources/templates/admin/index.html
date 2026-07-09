@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('مدیریت')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <h1 class="h3 mb-4">🛡️ پیشخوان مدیریت</h1>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <a th:href="@{/admin/tales(status='PENDING')}" class="text-decoration-none">
+                <div class="card text-center p-4 h-100">
+                    <div class="display-5" th:text="${@persianDate.digits(pendingCount)}">۰</div>
+                    <div class="text-warning fw-bold mt-2">قصهٔ در انتظار بررسی</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a th:href="@{/admin/tales(status='APPROVED')}" class="text-decoration-none">
+                <div class="card text-center p-4 h-100">
+                    <div class="display-5" th:text="${@persianDate.digits(approvedCount)}">۰</div>
+                    <div class="text-success fw-bold mt-2">قصهٔ منتشرشده</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a th:href="@{/admin/requests}" class="text-decoration-none">
+                <div class="card text-center p-4 h-100">
+                    <div class="display-5" th:text="${pendingRequestCount != null ? @persianDate.digits(pendingRequestCount) : '۰'}">۰</div>
+                    <div class="text-primary fw-bold mt-2">درخواست قصه‌گویی</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a th:href="@{/admin/users}" class="text-decoration-none">
+                <div class="card text-center p-4 h-100">
+                    <div class="display-5" th:text="${@persianDate.digits(userCount)}">۰</div>
+                    <div class="text-secondary fw-bold mt-2">کاربر</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mt-5">
+        <a th:href="@{/admin/tales}" class="btn btn-primary">بررسی قصه‌ها</a>
+        <a th:href="@{/admin/categories}" class="btn btn-outline-primary">مدیریت دسته‌ها</a>
+        <a th:href="@{/admin/requests}" class="btn btn-outline-primary">درخواست‌های قصه‌گویی</a>
+        <a th:href="@{/admin/comments}" class="btn btn-outline-primary">نظرها</a>
+        <a th:href="@{/admin/users}" class="btn btn-outline-primary">کاربران</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

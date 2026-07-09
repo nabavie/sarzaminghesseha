@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('داشبورد من')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <h1 class="h3 mb-0">
+            سلام <span th:text="${currentUser != null ? currentUser.displayName : ''}">دوست</span>! 👋
+        </h1>
+        <a th:href="@{/dashboard/profile}" class="btn btn-outline-primary">ویرایش پروفایل</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
+
+    <!-- Total listening time -->
+    <div class="alert alert-light border d-flex align-items-center gap-2 mb-4"
+         th:if="${totalListenedSeconds != null && totalListenedSeconds > 0}">
+        <span class="fs-4">⏱️</span>
+        <span>
+            تا حالا روی‌هم‌رفته <strong th:text="${@persianDate.duration(totalListenedSeconds)}">۰ دقیقه</strong>
+            قصه گوش داده‌ای. (تکرار قصه‌ها دوباره حساب نمی‌شود)
+        </span>
+    </div>
+
+    <!-- Continue listening -->
+    <section class="mb-5" th:unless="${#lists.isEmpty(inProgress)}">
+        <h2 class="h5 mb-3">▶️ ادامهٔ شنیدن</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4" th:each="p : ${inProgress}">
+                <a th:href="@{'/tales/' + ${p.tale.id}}" class="text-decoration-none text-reset">
+                    <div class="card tale-card p-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img th:if="${p.tale.coverPath != null}"
+                                 th:src="@{'/media/covers/' + ${p.tale.coverPath}}"
+                                 class="rounded-3" style="width:64px;height:64px;object-fit:cover;" alt="">
+                            <div th:if="${p.tale.coverPath == null}"
+                                 class="rounded-3 tale-cover-placeholder" style="width:64px;height:64px;font-size:1.6rem;">📖</div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold" th:text="${p.tale.title}">قصه</div>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" th:style="'width:' + ${p.percent} + '%'"></div>
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    <span th:text="${@persianDate.digits(p.percent)} + '٪ شنیده‌ای'">۰٪</span>
+                                    <span th:if="${p.listenedSeconds > 0}"
+                                          th:text="'— ⏱ ' + ${@persianDate.duration(p.listenedSeconds)}">زمان</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- My tales (favorites) -->
+    <section class="mb-5">
+        <h2 class="h5 mb-3">❤️ قصه‌های من</h2>
+        <div class="alert alert-light border" th:if="${#lists.isEmpty(favorites)}">
+            هنوز قصه‌ای به فهرست خود اضافه نکرده‌ای.
+            <a th:href="@{/tales}">برو قصه‌ها را ببین</a> و روی «افزودن به قصه‌های من» بزن!
+        </div>
+        <div class="row g-4" th:unless="${#lists.isEmpty(favorites)}">
+            <div class="col-sm-6 col-lg-4 col-xl-3" th:each="fav : ${favorites}">
+                <a th:href="@{'/tales/' + ${fav.tale.id}}" class="text-decoration-none text-reset">
+                    <div class="card tale-card">
+                        <img th:if="${fav.tale.coverPath != null}" th:src="@{'/media/covers/' + ${fav.tale.coverPath}}"
+                             class="tale-cover" alt="">
+                        <div th:if="${fav.tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
+                        <div class="card-body">
+                            <h3 class="h6 card-title fw-bold" th:text="${fav.tale.title}">عنوان</h3>
+                            <p class="small text-muted mb-0">
+                                🎙️ <span th:text="${fav.tale.storyteller.displayName}">قصه‌گو</span>
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Finished tales -->
+    <section class="mb-5" th:unless="${#lists.isEmpty(finished)}">
+        <h2 class="h5 mb-3">✅ قصه‌هایی که تا آخر شنیده‌ای</h2>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:each="p : ${finished}" th:href="@{'/tales/' + ${p.tale.id}}"
+               class="btn btn-outline-success btn-sm">
+                <span th:text="${p.tale.title}">قصه</span>
+                <span th:if="${p.listenedSeconds > 0}" class="opacity-75"
+                      th:text="'(' + ${@persianDate.duration(p.listenedSeconds)} + ')'">(زمان)</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Become a storyteller -->
+    <section th:unless="${isStoryteller}">
+        <div class="card p-4">
+            <h2 class="h5 mb-2">🎙️ می‌خواهی قصه‌گو شوی؟</h2>
+
+            <form th:action="@{/dashboard/storyteller-request}" method="post">
+                <p class="text-muted">
+                    اگر قصه‌های محلی و سنتی بلدی، همین حالا قصه‌گو شو و با صدای خودت آن‌ها را برای بچه‌ها بفرست.
+                    نقش قصه‌گویی بلافاصله فعال می‌شود؛ البته هر قصه پیش از انتشار توسط مدیر بررسی می‌شود.
+                </p>
+                <textarea class="form-control mb-3" name="message" rows="2" maxlength="500"
+                          placeholder="(دلخواه) چند کلمه دربارهٔ خودت و قصه‌هایی که بلدی بنویس..."></textarea>
+                <button type="submit" class="btn btn-warm">قصه‌گو می‌شوم 🎙️</button>
+            </form>
+        </div>
+    </section>
+
+    <section th:if="${isStoryteller}">
+        <div class="card p-4 d-flex flex-row flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="h5 mb-1">🎙️ شما قصه‌گوی سرزمین قصه‌ها هستید!</h2>
+                <p class="text-muted mb-0">قصه‌های تازه بگو و قصه‌های قبلی‌ات را مدیریت کن.</p>
+            </div>
+            <a th:href="@{/storyteller/tales}" class="btn btn-primary">رفتن به بخش قصه‌گویی</a>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

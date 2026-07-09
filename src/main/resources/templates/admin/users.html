@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('کاربران')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <h1 class="h3 mb-4">👥 کاربران</h1>
+
+    <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
+    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}">خطا</div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>نام</th>
+                    <th>نام کاربری</th>
+                    <th>نقش‌ها</th>
+                    <th>تاریخ عضویت</th>
+                    <th>وضعیت</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${usersPage.content}" th:classappend="${!user.enabled} ? 'table-secondary'">
+                    <td class="fw-bold" th:text="${user.displayName}">نام</td>
+                    <td dir="ltr" th:text="${user.username}">username</td>
+                    <td>
+                        <span class="badge text-bg-secondary me-1" th:each="role : ${user.roles}"
+                              th:text="${role.name() == 'ADMIN' ? 'مدیر' : role.name() == 'STORYTELLER' ? 'قصه‌گو' : 'شنونده'}">نقش</span>
+                    </td>
+                    <td th:text="${@persianDate.format(user.createdAt)}">تاریخ</td>
+                    <td>
+                        <span class="badge" th:classappend="${user.enabled} ? 'text-bg-success' : 'text-bg-danger'"
+                              th:text="${user.enabled} ? 'فعال' : 'غیرفعال'">وضعیت</span>
+                    </td>
+                    <td class="text-start">
+                        <span class="text-muted small"
+                              th:if="${currentUser != null && currentUser.id == user.id}">(شما)</span>
+                        <form th:unless="${currentUser != null && currentUser.id == user.id}"
+                              th:action="@{|/admin/users/${user.id}/toggle-enabled|(page=${usersPage.number})}"
+                              method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm"
+                                    th:classappend="${user.enabled} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                    th:text="${user.enabled} ? 'غیرفعال کردن' : 'فعال کردن'">تغییر وضعیت</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav class="mt-4" th:if="${usersPage.totalPages > 1}" aria-label="صفحه‌ها">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+                th:classappend="${i == usersPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/admin/users(page=${i})}"
+                   th:text="${@persianDate.digits(i + 1)}">۱</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

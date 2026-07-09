@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('بررسی قصه')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <a th:href="@{/admin/tales}" class="btn btn-outline-secondary btn-sm mb-3">← بازگشت به فهرست</a>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h1 class="h3 mb-0" th:text="${tale.title}">عنوان قصه</h1>
+                    <span class="badge fs-6" th:classappend="'text-bg-' + ${tale.status.badgeClass}"
+                          th:text="${tale.status.persianName}">وضعیت</span>
+                </div>
+
+                <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
+                     class="rounded-3 mb-3" style="max-height: 260px; object-fit: cover;" alt="تصویر قصه">
+
+                <p class="text-muted mb-1">
+                    🎙️ قصه‌گو: <strong th:text="${tale.storyteller.displayName}">نام</strong>
+                    (<span dir="ltr" th:text="${tale.storyteller.username}">username</span>)
+                </p>
+                <p class="text-muted mb-3" th:text="'📅 ' + ${@persianDate.format(tale.createdAt)}">تاریخ</p>
+
+                <div class="mb-3">
+                    <span class="badge text-bg-light border me-1" th:each="cat : ${tale.categories}"
+                          th:text="${cat.name}">دسته</span>
+                </div>
+
+                <p style="white-space: pre-line;" th:text="${tale.description}">توضیح</p>
+
+                <div class="bg-light rounded-3 p-3">
+                    <div class="fw-bold mb-2">🎧 صدای قصه را گوش کنید:</div>
+                    <audio controls preload="metadata" controlslist="nodownload"
+                           th:src="@{|/tales/${tale.id}/audio|(t=${@mediaToken.issue(tale.id)})}"></audio>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card p-4">
+                <h2 class="h5 mb-3">تصمیم شما</h2>
+                <div class="alert alert-warning small" th:if="${tale.reviewNote != null}">
+                    یادداشت قبلی: <span th:text="${tale.reviewNote}">یادداشت</span>
+                </div>
+                <form th:action="@{'/admin/tales/' + ${tale.id} + '/approve'}" method="post" class="mb-3">
+                    <button type="submit" class="btn btn-success btn-big w-100">✔ تأیید و انتشار</button>
+                </form>
+                <form th:action="@{'/admin/tales/' + ${tale.id} + '/reject'}" method="post">
+                    <label for="note" class="form-label fw-bold">پیام برای قصه‌گو (در صورت رد):</label>
+                    <textarea class="form-control mb-2" id="note" name="note" rows="3"
+                              placeholder="مثلاً: صدای ضبط‌شده واضح نیست؛ لطفاً دوباره ضبط کنید."></textarea>
+                    <button type="submit" class="btn btn-outline-danger w-100">✖ رد کردن قصه</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

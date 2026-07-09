@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('پروفایل من')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card p-4 p-md-5">
+                <h1 class="h3 mb-4">🧸 پروفایل من</h1>
+
+                <div class="alert alert-success" th:if="${success != null}" th:text="${success}">ذخیره شد</div>
+                <div class="alert alert-danger" th:if="${error != null}" th:text="${error}">خطا</div>
+
+                <div class="text-center mb-4">
+                    <img th:if="${user.avatarPath != null}" th:src="@{'/media/avatars/' + ${user.avatarPath}}"
+                         class="rounded-circle" style="width:120px;height:120px;object-fit:cover;" alt="تصویر شما">
+                    <div th:if="${user.avatarPath == null}"
+                         class="rounded-circle tale-cover-placeholder d-inline-flex"
+                         style="width:120px;height:120px;font-size:3rem;">🙂</div>
+                </div>
+
+                <form th:action="@{/dashboard/profile}" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">نام کاربری</label>
+                        <input type="text" class="form-control" dir="ltr" th:value="${user.username}" disabled>
+                        <div class="form-text">نام کاربری قابل تغییر نیست.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="displayName" class="form-label fw-bold">نام نمایشی</label>
+                        <input type="text" class="form-control form-control-lg" id="displayName" name="displayName"
+                               th:value="${user.displayName}" required maxlength="100">
+                    </div>
+                    <div class="mb-4">
+                        <label for="avatar" class="form-label fw-bold">تصویر پروفایل</label>
+                        <input type="file" class="form-control form-control-lg" id="avatar" name="avatar"
+                               accept="image/*">
+                        <div class="form-text">عکس jpg، png یا webp انتخاب کن.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-big w-100">ذخیرهٔ پروفایل</button>
+                </form>
+
+                <hr class="my-4">
+
+                <h2 class="h5 mb-3">🔒 تغییر رمز عبور</h2>
+                <form th:action="@{/dashboard/profile/password}" th:object="${passwordForm}" method="post">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label fw-bold">رمز عبور فعلی</label>
+                        <input type="password" class="form-control" id="currentPassword"
+                               th:field="*{currentPassword}"
+                               th:classappend="${#fields.hasErrors('currentPassword')} ? 'is-invalid'"
+                               autocomplete="current-password">
+                        <div class="invalid-feedback" th:errors="*{currentPassword}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label fw-bold">رمز عبور تازه</label>
+                        <input type="password" class="form-control" id="newPassword"
+                               th:field="*{newPassword}"
+                               th:classappend="${#fields.hasErrors('newPassword')} ? 'is-invalid'"
+                               autocomplete="new-password" data-password-rules="passwordRules">
+                        <div class="invalid-feedback" th:errors="*{newPassword}"></div>
+                        <ul class="list-unstyled small mt-2 mb-0" id="passwordRules">
+                            <li class="text-muted" data-rule="length"><span class="rule-mark">✖</span> دست‌کم ۸ کاراکتر</li>
+                            <li class="text-muted" data-rule="letter"><span class="rule-mark">✖</span> دست‌کم یک حرف</li>
+                            <li class="text-muted" data-rule="digit"><span class="rule-mark">✖</span> دست‌کم یک عدد</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label fw-bold">تکرار رمز عبور تازه</label>
+                        <input type="password" class="form-control" id="confirmPassword"
+                               th:field="*{confirmPassword}"
+                               th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                               autocomplete="new-password">
+                        <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100">تغییر رمز عبور</button>
+                </form>
+
+                <hr class="my-4">
+
+                <h2 class="h5 mb-2">🗝️ کد بازیابی رمز عبور</h2>
+                <div th:if="${newRecoveryCode != null}">
+                    <div class="bg-light border rounded-3 p-3 my-2 fs-5 fw-bold text-center" dir="ltr"
+                         style="letter-spacing: 2px; user-select: all;"
+                         th:text="${newRecoveryCode}">XXXX-XXXX-XXXX-XXXX</div>
+                    <div class="alert alert-warning small">
+                        ⚠️ این کد فقط همین یک بار نشان داده می‌شود؛ همین حالا یادداشتش کنید.
+                        کد قبلی شما دیگر کار نمی‌کند.
+                    </div>
+                </div>
+                <p class="text-muted small" th:if="${newRecoveryCode == null}">
+                    اگر کد بازیابی‌تان را گم کرده‌اید، کد تازه بگیرید و جای امنی نگه دارید.
+                    با آن می‌توانید بدون رمز، از صفحهٔ «بازیابی رمز عبور» رمز تازه بگذارید.
+                </p>
+                <form th:action="@{/dashboard/recovery-code}" method="post" th:if="${newRecoveryCode == null}">
+                    <button type="submit" class="btn btn-outline-secondary w-100">گرفتن کد بازیابی تازه</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script th:src="@{/js/password-rules.js}"></script>
+</body>
+</html>

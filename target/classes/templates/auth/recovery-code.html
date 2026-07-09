@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('کد بازیابی رمز عبور')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card p-4 p-md-5 text-center">
+                <div class="display-4 mb-2">🗝️</div>
+                <h1 class="h3 mb-3" th:text="${afterReset != null ? 'رمز عبور شما عوض شد!' : 'ثبت‌نام شما انجام شد!'}">انجام شد!</h1>
+
+                <p class="text-muted">
+                    این <strong>کد بازیابی</strong> شماست. اگر روزی رمز عبورتان را فراموش کردید،
+                    با همین کد می‌توانید رمز تازه‌ای بگذارید.
+                </p>
+
+                <div class="bg-light border rounded-3 p-3 my-3 fs-4 fw-bold" dir="ltr"
+                     style="letter-spacing: 2px; user-select: all;"
+                     th:text="${recoveryCode}">XXXX-XXXX-XXXX-XXXX</div>
+
+                <div class="alert alert-warning text-start small">
+                    ⚠️ این کد فقط <strong>همین یک بار</strong> نشان داده می‌شود و جای دیگری ذخیره نیست.
+                    آن را همین حالا یادداشت کنید یا یک عکس از این صفحه بگیرید و جای امنی نگه دارید.
+                    هر بار که از کد استفاده کنید، کد تازه‌ای می‌گیرید.
+                </div>
+
+                <a th:href="@{/login}" class="btn btn-primary btn-big w-100">کد را نوشتم؛ برو به صفحهٔ ورود</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

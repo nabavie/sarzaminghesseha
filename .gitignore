@@ -1,0 +1,34 @@
+# Maven
+target/
+*.jar
+*.war
+*.nar
+*.ear
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+
+# Spring Boot specific
+application-*.yml
+application-*.properties

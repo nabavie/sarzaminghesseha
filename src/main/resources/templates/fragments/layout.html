@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
+    <title th:text="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها'}">سرزمین قصه‌ها</title>
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.rtl.min.css}">
+    <link rel="stylesheet" th:href="@{/fonts/vazirmatn.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg app-navbar">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">🌙 سرزمین قصه‌ها</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="باز کردن منو">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tales}">همهٔ قصه‌ها</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/dashboard}">داشبورد من</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('STORYTELLER')">
+                    <a class="nav-link" th:href="@{/storyteller/tales}">قصه‌گویی</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin}">مدیریت</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-2" sec:authorize="!isAuthenticated()">
+                <a th:href="@{/login}" class="btn btn-outline-light btn-sm px-3">ورود</a>
+                <a th:href="@{/register}" class="btn btn-warm btn-sm px-3">ثبت‌نام</a>
+            </div>
+            <div class="d-flex align-items-center gap-2" sec:authorize="isAuthenticated()">
+                <a th:href="@{/dashboard/profile}" class="d-flex align-items-center gap-2 text-decoration-none">
+                    <img th:if="${currentUser != null && currentUser.avatarPath != null}"
+                         th:src="@{'/media/avatars/' + ${currentUser.avatarPath}}"
+                         class="navbar-avatar" alt="تصویر کاربر">
+                    <span class="text-white"
+                          th:text="${currentUser != null ? currentUser.displayName : ''}">کاربر</span>
+                </a>
+                <form th:action="@{/logout}" method="post" class="d-inline m-0">
+                    <button type="submit" class="btn btn-outline-light btn-sm">خروج</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<footer th:fragment="footer" class="app-footer">
+    <div class="container text-center py-4">
+        <div class="fs-5 mb-1">🌙 سرزمین قصه‌ها</div>
+        <p class="mb-0 small">پلی میان قصه‌های کهن ایران و کودکان امروز — قصه‌های محلی و سنتی را زنده نگه داریم</p>
+    </div>
+</footer>
+
+<div th:fragment="scripts">
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+</div>
+
+</body>
+</html>

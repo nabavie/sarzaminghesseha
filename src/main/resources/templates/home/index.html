@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(null)}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main>
+    <section class="hero mb-5">
+        <div class="container text-center">
+            <h1 class="display-5 mb-3">سرزمین قصه‌ها</h1>
+            <p class="fs-5 mb-4">قصه‌های محلی و سنتی ایران با صدای قصه‌گویان، برای بچه‌های امروز 🌙✨</p>
+            <form th:action="@{/tales}" method="get" class="row justify-content-center g-2">
+                <div class="col-10 col-md-6 col-lg-5">
+                    <input type="search" name="q" class="form-control form-control-lg"
+                           placeholder="دنبال چه قصه‌ای می‌گردی؟">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-warm btn-lg px-4">جست‌وجو</button>
+                </div>
+            </form>
+            <div class="mt-4">
+                <a th:each="cat : ${categories}" th:href="@{/tales(category=${cat.id})}"
+                   class="category-chip" th:text="${cat.name}">دسته</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+
+        <!-- Top 5 of the month -->
+        <section class="mb-5" th:unless="${#lists.isEmpty(topTales)}">
+            <h2 class="h4 mb-1">🏆 ۵ قصهٔ برتر <span th:text="${topMonthName != null ? topMonthName : 'این ماه'}">این ماه</span></h2>
+            <p class="text-muted mb-4">قصه‌هایی که بچه‌ها این ماه بیشتر از همه دوست داشتند (بر پایهٔ امتیازهای همین ماه)</p>
+            <div class="row g-4">
+                <div class="col-sm-6 col-lg-4 col-xl" th:each="tale, stat : ${topTales}">
+                    <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
+                        <div class="card tale-card position-relative">
+                            <span class="top-rank" th:text="${@persianDate.digits(stat.count)}">۱</span>
+                            <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
+                                 class="tale-cover" alt="تصویر قصه">
+                            <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">🏆</div>
+                            <div class="card-body">
+                                <h3 class="h6 card-title fw-bold" th:text="${tale.title}">عنوان</h3>
+                                <p class="small text-muted mb-0">
+                                    🎙️ <span th:text="${tale.storyteller.displayName}">قصه‌گو</span>
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest tales -->
+        <section class="mb-5" th:unless="${#lists.isEmpty(latestTales)}">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0">🆕 تازه‌ترین قصه‌ها</h2>
+                <a th:href="@{/tales}" class="btn btn-outline-primary btn-sm">همهٔ قصه‌ها ←</a>
+            </div>
+            <div class="row g-4">
+                <div class="col-sm-6 col-lg-4 col-xl-3" th:each="tale : ${latestTales}">
+                    <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
+                        <div class="card tale-card">
+                            <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
+                                 class="tale-cover" alt="تصویر قصه">
+                            <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
+                            <div class="card-body">
+                                <h3 class="h6 card-title fw-bold" th:text="${tale.title}">عنوان</h3>
+                                <p class="small text-muted mb-2">
+                                    🎙️ <span th:text="${tale.storyteller.displayName}">قصه‌گو</span>
+                                </p>
+                                <div>
+                                    <span class="badge text-bg-light border me-1" th:each="cat : ${tale.categories}"
+                                          th:text="${cat.name}">دسته</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Empty state: no tales yet -->
+        <section class="text-center py-5" th:if="${#lists.isEmpty(latestTales)}">
+            <div class="display-1 mb-3">📖</div>
+            <h2 class="h4 mb-2">هنوز قصه‌ای منتشر نشده است</h2>
+            <p class="text-muted mb-4">اولین قصه‌گوی سرزمین قصه‌ها باش و قصه‌های محلی را زنده کن!</p>
+            <a th:href="@{/register}" class="btn btn-warm btn-big">قصه‌گو شو 🎙️</a>
+        </section>
+
+        <!-- Call to storytellers -->
+        <section class="mb-5" th:unless="${#lists.isEmpty(latestTales)}">
+            <div class="card p-4 p-md-5 text-center">
+                <h2 class="h4 mb-2">🎙️ شما هم قصه بلدید؟</h2>
+                <p class="text-muted mb-4">
+                    قصه‌های محلی و سنتی شهر و روستای خود را با صدای خودتان ضبط کنید تا برای همیشه بماند
+                    و بچه‌های سراسر ایران آن‌ها را بشنوند.
+                </p>
+                <div>
+                    <a th:href="@{/register}" class="btn btn-warm btn-big">قصه‌گو شو</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
