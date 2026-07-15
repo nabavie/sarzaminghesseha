@@ -29,10 +29,23 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label fw-bold">رمز عبور</label>
-                        <input type="password" class="form-control form-control-lg" id="password"
-                               th:field="*{password}" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
-                               autocomplete="new-password" data-password-rules="passwordRules">
-                        <div class="invalid-feedback" th:errors="*{password}"></div>
+                        <div class="input-group has-validation">
+                            <input type="password" class="form-control form-control-lg" id="password"
+                                   th:field="*{password}" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                                   autocomplete="new-password" data-password-rules="passwordRules">
+                            <button type="button" class="btn password-toggle"
+                                    data-password-toggle="password" aria-label="نمایش رمز عبور"
+                                    title="نمایش رمز عبور" aria-pressed="false">
+                                <svg class="password-toggle-show" aria-hidden="true" viewBox="0 0 24 24">
+                                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+                                    <circle cx="12" cy="12" r="2.5"/>
+                                </svg>
+                                <svg class="password-toggle-hide d-none" aria-hidden="true" viewBox="0 0 24 24">
+                                    <path d="M3 3l18 18M10.6 6.1A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-2.1 2.8M6.2 6.2C3.8 7.9 2.5 12 2.5 12s3.5 6 9.5 6a9.7 9.7 0 0 0 3.1-.5M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+                                </svg>
+                            </button>
+                            <div class="invalid-feedback" th:errors="*{password}"></div>
+                        </div>
                         <ul class="list-unstyled small mt-2 mb-0" id="passwordRules">
                             <li class="text-muted" data-rule="length"><span class="rule-mark">✖</span> دست‌کم ۸ کاراکتر</li>
                             <li class="text-muted" data-rule="letter"><span class="rule-mark">✖</span> دست‌کم یک حرف</li>
@@ -41,10 +54,23 @@
                     </div>
                     <div class="mb-4">
                         <label for="confirmPassword" class="form-label fw-bold">تکرار رمز عبور</label>
-                        <input type="password" class="form-control form-control-lg" id="confirmPassword"
-                               th:field="*{confirmPassword}" th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
-                               autocomplete="new-password">
-                        <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
+                        <div class="input-group has-validation">
+                            <input type="password" class="form-control form-control-lg" id="confirmPassword"
+                                   th:field="*{confirmPassword}" th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                                   autocomplete="new-password">
+                            <button type="button" class="btn password-toggle"
+                                    data-password-toggle="confirmPassword" aria-label="نمایش تکرار رمز عبور"
+                                    title="نمایش تکرار رمز عبور" aria-pressed="false">
+                                <svg class="password-toggle-show" aria-hidden="true" viewBox="0 0 24 24">
+                                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+                                    <circle cx="12" cy="12" r="2.5"/>
+                                </svg>
+                                <svg class="password-toggle-hide d-none" aria-hidden="true" viewBox="0 0 24 24">
+                                    <path d="M3 3l18 18M10.6 6.1A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-2.1 2.8M6.2 6.2C3.8 7.9 2.5 12 2.5 12s3.5 6 9.5 6a9.7 9.7 0 0 0 3.1-.5M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+                                </svg>
+                            </button>
+                            <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
+                        </div>
                     </div>
 
                     <div class="form-check form-switch mb-4 p-3 pe-5 bg-light rounded-3">
@@ -70,5 +96,6 @@
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
 <script th:src="@{/js/password-rules.js}"></script>
+<script th:src="@{/js/password-toggle.js}"></script>
 </body>
 </html>

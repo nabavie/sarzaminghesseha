@@ -146,6 +146,49 @@ main {
     font-size: 1.15rem;
 }
 
+.password-toggle {
+    width: 3.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    color: #716a7a;
+}
+
+.input-group > .form-control + .password-toggle {
+    margin-inline-start: -1px;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+}
+
+.input-group > .form-control:has(+ .password-toggle) {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+}
+
+.password-toggle:hover {
+    background: #f4f1fb;
+    border-color: #a49bc4;
+    color: var(--night);
+}
+
+.password-toggle:focus-visible {
+    color: var(--night);
+    border-color: #8c82bc;
+    box-shadow: 0 0 0 .25rem rgba(59, 52, 134, .18);
+}
+
+.password-toggle svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* ---------- Category chips ---------- */
 .category-chip {
     display: inline-block;

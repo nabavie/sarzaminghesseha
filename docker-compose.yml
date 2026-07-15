@@ -62,11 +62,15 @@ services:
       # The app is on two networks; without this Traefik may try to reach it
       # over "internal" (which Traefik isn't on) and time out.
       - traefik.docker.network=myapp_web
-      - "traefik.http.routers.qesseha.rule=Host(`${DOMAIN:-sarzaminghesseha.ir}`)"
+      # Correct Traefik v3 Host rule for multiple domains
+      - "traefik.http.routers.qesseha.rule=Host(`sarzaminghesseha.ir`) || Host(`sarzaminghesseha.com`)"
       - traefik.http.routers.qesseha.entrypoints=websecure
       - traefik.http.routers.qesseha.tls.certresolver=letsencrypt
+      # Force separate Let's Encrypt SSL certificates for each unique domain listed in your rule
+      - "traefik.http.routers.qesseha.tls.domains[0].main=sarzaminghesseha.ir"
+      - "traefik.http.routers.qesseha.tls.domains[1].main=sarzaminghesseha.com"
       - traefik.http.services.qesseha.loadbalancer.server.port=8081
-      # Security headers added at the edge (the app already sets X-Frame-Options etc.)
+      # Security headers
       - traefik.http.middlewares.qesseha-headers.headers.stsSeconds=31536000
       - traefik.http.middlewares.qesseha-headers.headers.stsIncludeSubdomains=true
       - traefik.http.middlewares.qesseha-headers.headers.contentTypeNosniff=true
