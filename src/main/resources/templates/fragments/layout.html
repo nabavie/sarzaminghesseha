@@ -7,7 +7,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
-    <title th:text="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها'}">سرزمین قصه‌ها</title>
+    <title th:text="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها | قصه صوتی و قصه شب'}">سرزمین قصه‌ها</title>
+    <meta name="description"
+          th:content="${pageDescription != null ? pageDescription : defaultDescription}">
+    <meta name="keywords" th:content="${defaultKeywords}">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" th:href="@{/img/logo.png}">
+    <link rel="apple-touch-icon" th:href="@{/img/logo.png}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="سرزمین قصه‌ها">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:title"
+          th:content="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها | قصه صوتی و قصه شب'}">
+    <meta property="og:description"
+          th:content="${pageDescription != null ? pageDescription : defaultDescription}">
+    <meta property="og:image" th:content="${pageImage != null ? pageImage : '/img/logo.png'}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title"
+          th:content="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها'}">
+    <meta name="twitter:description"
+          th:content="${pageDescription != null ? pageDescription : defaultDescription}">
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.rtl.min.css}">
     <link rel="stylesheet" th:href="@{/fonts/vazirmatn.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
@@ -16,7 +35,10 @@
 
 <nav th:fragment="navbar" class="navbar navbar-expand-lg app-navbar">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/}">🌙 سرزمین قصه‌ها</a>
+        <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <img th:src="@{/img/logo.png}" alt="سرزمین قصه‌ها" class="brand-logo" width="44" height="44">
+            <span>سرزمین قصه‌ها</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
                 aria-controls="mainNav" aria-expanded="false" aria-label="باز کردن منو">
             <span class="navbar-toggler-icon"></span>
@@ -31,6 +53,13 @@
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('STORYTELLER')">
                     <a class="nav-link" th:href="@{/storyteller/tales}">قصه‌گویی</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('STORYTELLER')">
+                    <a class="nav-link position-relative" th:href="@{/storyteller/comments}">
+                        نظرها
+                        <span class="nav-badge" th:if="${unseenCommentCount != null && unseenCommentCount > 0}"
+                              th:text="${@persianDate.digits(unseenCommentCount)}">۰</span>
+                    </a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('ADMIN')">
                     <a class="nav-link" th:href="@{/admin}">مدیریت</a>
@@ -58,8 +87,12 @@
 
 <footer th:fragment="footer" class="app-footer">
     <div class="container text-center py-4">
-        <div class="fs-5 mb-1">🌙 سرزمین قصه‌ها</div>
-        <p class="mb-0 small">پلی میان قصه‌های کهن ایران و کودکان امروز — قصه‌های محلی و سنتی را زنده نگه داریم</p>
+        <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+            <img th:src="@{/img/logo.png}" alt="سرزمین قصه‌ها" class="brand-logo brand-logo-sm" width="40" height="40">
+            <div class="fs-5 mb-0">سرزمین قصه‌ها</div>
+        </div>
+        <p class="mb-2 small">قصه صوتی، قصه شب و داستان برای کودکان و نوجوانان — پلی میان قصه‌های کهن ایران و شنوندگان امروز</p>
+        <p class="mb-0 small opacity-75">قصه گویی · قصه شب صوتی · داستان صوتی</p>
     </div>
 </footer>
 

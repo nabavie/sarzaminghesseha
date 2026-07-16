@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Controller
@@ -54,17 +56,37 @@ public class TaleController {
     @GetMapping("/tales")
     public String list(@RequestParam(required = false) String q,
                        @RequestParam(required = false) Long category,
+                       @RequestParam(required = false) Long storyteller,
                        @RequestParam(defaultValue = "0") int page,
                        Model model) {
-        var talesPage = taleService.searchApproved(q, category, Math.max(page, 0), PAGE_SIZE);
+        String query = q == null ? "" : q.trim();
+        var talesPage = taleService.searchApproved(query, category, storyteller, Math.max(page, 0), PAGE_SIZE);
         model.addAttribute("talesPage", talesPage);
-        // window of page numbers around the current one, so huge catalogs don't render hundreds of links
         int lastPage = Math.max(talesPage.getTotalPages() - 1, 0);
         model.addAttribute("pageWindowStart", Math.max(0, talesPage.getNumber() - 2));
         model.addAttribute("pageWindowEnd", Math.min(lastPage, talesPage.getNumber() + 2));
         model.addAttribute("categories", categoryService.findAll());
-        model.addAttribute("q", q == null ? "" : q.trim());
+        model.addAttribute("q", query);
         model.addAttribute("selectedCategory", category);
+        model.addAttribute("selectedStorytellerId", storyteller);
+
+        List<User> matchingStorytellers = List.of();
+        if (!query.isEmpty() && storyteller == null) {
+            matchingStorytellers = userService.searchStorytellers(query);
+            if (matchingStorytellers.size() > 8) {
+                matchingStorytellers = matchingStorytellers.subList(0, 8);
+            }
+        }
+        model.addAttribute("matchingStorytellers", matchingStorytellers);
+
+        User selectedStoryteller = null;
+        if (storyteller != null) {
+            selectedStoryteller = userService.findById(storyteller).orElse(null);
+        }
+        model.addAttribute("selectedStoryteller", selectedStoryteller);
+
+        model.addAttribute("pageDescription",
+                "جست‌وجوی قصه صوتی، قصه شب و داستان برای کودکان و نوجوانان در سرزمین قصه‌ها.");
         return "tales/list";
     }
 
@@ -86,6 +108,17 @@ public class TaleController {
         model.addAttribute("userStars", user == null ? null : ratingService.userStars(user, tale));
         model.addAttribute("resumeSeconds", user == null ? 0
                 : progressService.find(user, tale).map(ListeningProgress::getSeconds).orElse(0));
+
+        String desc = tale.getDescription() == null ? "" : tale.getDescription().trim();
+        if (desc.length() > 160) {
+            desc = desc.substring(0, 157) + "…";
+        }
+        if (desc.isEmpty()) {
+            desc = "قصه صوتی «" + tale.getTitle() + "» — قصه شب و داستان برای کودکان و نوجوانان در سرزمین قصه‌ها";
+        }
+        model.addAttribute("pageDescription", desc);
+        model.addAttribute("pageImage", tale.getCoverPath() != null
+                ? "/media/covers/" + tale.getCoverPath() : "/img/logo.png");
         return "tales/detail";
     }
 

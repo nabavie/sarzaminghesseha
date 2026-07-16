@@ -24,6 +24,14 @@ public class TaleForm {
     /** Required on create; optional on edit (keeps the existing audio). */
     private MultipartFile audio;
 
+    /**
+     * Filename returned by the progressive upload API. When set (and present in
+     * the session's pending uploads), the form skips re-sending the audio blob.
+     */
+    private String audioFilename;
+
+    private String audioContentType;
+
     private MultipartFile cover;
 
     public String getTitle() {
@@ -56,6 +64,22 @@ public class TaleForm {
 
     public void setAudio(MultipartFile audio) {
         this.audio = audio;
+    }
+
+    public String getAudioFilename() {
+        return audioFilename;
+    }
+
+    public void setAudioFilename(String audioFilename) {
+        this.audioFilename = audioFilename;
+    }
+
+    public String getAudioContentType() {
+        return audioContentType;
+    }
+
+    public void setAudioContentType(String audioContentType) {
+        this.audioContentType = audioContentType;
     }
 
     public MultipartFile getCover() {

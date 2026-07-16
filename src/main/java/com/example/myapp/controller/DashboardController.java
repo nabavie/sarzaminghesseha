@@ -5,6 +5,7 @@ import com.example.myapp.model.ListeningProgress;
 import com.example.myapp.model.Role;
 import com.example.myapp.model.TaleStatus;
 import com.example.myapp.model.User;
+import com.example.myapp.service.CommentService;
 import com.example.myapp.service.CustomUserDetailsService;
 import com.example.myapp.service.FavoriteService;
 import com.example.myapp.service.FileStorageService;
@@ -48,6 +49,7 @@ public class DashboardController {
     private final FileStorageService storage;
     private final PasswordRecoveryService recoveryService;
     private final CustomUserDetailsService userDetailsService;
+    private final CommentService commentService;
 
     public DashboardController(UserService userService,
                                FavoriteService favoriteService,
@@ -55,7 +57,8 @@ public class DashboardController {
                                StorytellerRequestService requestService,
                                FileStorageService storage,
                                PasswordRecoveryService recoveryService,
-                               CustomUserDetailsService userDetailsService) {
+                               CustomUserDetailsService userDetailsService,
+                               CommentService commentService) {
         this.userService = userService;
         this.favoriteService = favoriteService;
         this.progressService = progressService;
@@ -63,6 +66,7 @@ public class DashboardController {
         this.storage = storage;
         this.recoveryService = recoveryService;
         this.userDetailsService = userDetailsService;
+        this.commentService = commentService;
     }
 
     @GetMapping
@@ -87,6 +91,10 @@ public class DashboardController {
 
         model.addAttribute("isStoryteller", user.hasRole(Role.STORYTELLER));
         model.addAttribute("latestRequest", requestService.latestForUser(user).orElse(null));
+        if (user.hasRole(Role.STORYTELLER)) {
+            model.addAttribute("storytellerComments", commentService.forStoryteller(user).stream().limit(8).toList());
+            model.addAttribute("unseenOnDashboard", commentService.countUnseenForStoryteller(user));
+        }
         return "dashboard/index";
     }
 

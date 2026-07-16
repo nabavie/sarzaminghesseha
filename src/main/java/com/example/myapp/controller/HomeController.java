@@ -53,6 +53,9 @@ public class HomeController {
         model.addAttribute("topMonthName", persianDate.currentJalaliMonthName());
         model.addAttribute("latestTales", latest);
         model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("pageDescription",
+                "سرزمین قصه‌ها — قصه صوتی، قصه شب، داستان کودکانه و نوجوانانه، و قصه گویی. "
+                        + "قصه‌های صوتی برای کودکان، نوجوانان و همهٔ دوستداران قصه.");
         return "home/index";
     }
 }

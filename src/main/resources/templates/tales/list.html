@@ -5,22 +5,57 @@
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
 <main class="container py-5">
-    <h1 class="h3 mb-4">📚 قصه‌های سرزمین</h1>
+    <h1 class="h3 mb-2">📚 قصه‌های سرزمین</h1>
+    <p class="text-muted mb-4">جست‌وجوی قصه صوتی، قصه شب، داستان کودکانه و نوجوانانه، یا نام قصه‌گو</p>
 
     <form th:action="@{/tales}" method="get" class="row g-2 mb-3">
         <div class="col-md-6 col-lg-5">
             <input type="search" name="q" class="form-control form-control-lg" th:value="${q}"
-                   placeholder="دنبال چه قصه‌ای می‌گردی؟">
+                   placeholder="نام قصه یا نام قصه‌گو…">
+        </div>
+        <div class="col-auto" th:if="${selectedStorytellerId != null}">
+            <input type="hidden" name="storyteller" th:value="${selectedStorytellerId}">
         </div>
         <div class="col-auto">
             <button type="submit" class="btn btn-primary btn-lg px-4">جست‌وجو</button>
         </div>
     </form>
 
+    <div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-2"
+         th:if="${selectedStoryteller != null}">
+        <span>
+            قصه‌های قصه‌گو:
+            <strong th:text="${selectedStoryteller.displayName}">نام</strong>
+        </span>
+        <a th:href="@{/tales(q=${q}, category=${selectedCategory})}" class="btn btn-sm btn-outline-secondary">پاک کردن فیلتر</a>
+    </div>
+
+    <section class="mb-4" th:if="${matchingStorytellers != null && !#lists.isEmpty(matchingStorytellers)}">
+        <h2 class="h6 mb-3">🎙️ قصه‌گوهای هم‌نام</h2>
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-4" th:each="st : ${matchingStorytellers}">
+                <a th:href="@{'/storytellers/' + ${st.id}}" class="text-decoration-none text-reset">
+                    <div class="card storyteller-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <img th:if="${st.avatarPath != null}" th:src="@{'/media/avatars/' + ${st.avatarPath}}"
+                                 class="storyteller-avatar" alt="">
+                            <div th:if="${st.avatarPath == null}" class="storyteller-avatar-placeholder">🎙️</div>
+                            <div>
+                                <div class="fw-bold" th:text="${st.displayName}">نام</div>
+                                <div class="small text-muted">دیدن همهٔ قصه‌ها ←</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <div class="mb-4">
-        <a th:href="@{/tales(q=${q})}" class="category-chip"
+        <a th:href="@{/tales(q=${q}, storyteller=${selectedStorytellerId})}" class="category-chip"
            th:classappend="${selectedCategory == null} ? 'active'">همه</a>
-        <a th:each="cat : ${categories}" th:href="@{/tales(q=${q}, category=${cat.id})}"
+        <a th:each="cat : ${categories}"
+           th:href="@{/tales(q=${q}, category=${cat.id}, storyteller=${selectedStorytellerId})}"
            class="category-chip" th:classappend="${selectedCategory == cat.id} ? 'active'"
            th:text="${cat.name}">دسته</a>
     </div>
@@ -31,23 +66,29 @@
 
     <div class="row g-4" th:unless="${talesPage.isEmpty()}">
         <div class="col-sm-6 col-lg-4 col-xl-3" th:each="tale : ${talesPage.content}">
-            <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
-                <div class="card tale-card">
+            <div class="card tale-card">
+                <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
                     <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
                          class="tale-cover" alt="تصویر قصه">
                     <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
-                    <div class="card-body">
-                        <h2 class="h6 card-title fw-bold" th:text="${tale.title}">عنوان</h2>
-                        <p class="small text-muted mb-2">
-                            🎙️ <span th:text="${tale.storyteller.displayName}">قصه‌گو</span>
-                        </p>
-                        <div>
-                            <span class="badge text-bg-light border me-1" th:each="cat : ${tale.categories}"
-                                  th:text="${cat.name}">دسته</span>
-                        </div>
+                </a>
+                <div class="card-body">
+                    <h2 class="h6 card-title fw-bold">
+                        <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset"
+                           th:text="${tale.title}">عنوان</a>
+                    </h2>
+                    <p class="small text-muted mb-2">
+                        🎙️
+                        <a class="text-decoration-none"
+                           th:href="@{'/storytellers/' + ${tale.storyteller.id}}"
+                           th:text="${tale.storyteller.displayName}">قصه‌گو</a>
+                    </p>
+                    <div>
+                        <span class="badge text-bg-light border me-1" th:each="cat : ${tale.categories}"
+                              th:text="${cat.name}">دسته</span>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
     </div>
 
@@ -55,31 +96,31 @@
         <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" th:classappend="${talesPage.first} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/tales(q=${q}, category=${selectedCategory}, page=${talesPage.number - 1})}">قبلی</a>
+                   th:href="@{/tales(q=${q}, category=${selectedCategory}, storyteller=${selectedStorytellerId}, page=${talesPage.number - 1})}">قبلی</a>
             </li>
 
             <li class="page-item" th:if="${pageWindowStart > 0}">
-                <a class="page-link" th:href="@{/tales(q=${q}, category=${selectedCategory}, page=0)}"
+                <a class="page-link" th:href="@{/tales(q=${q}, category=${selectedCategory}, storyteller=${selectedStorytellerId}, page=0)}"
                    th:text="${@persianDate.digits(1)}">۱</a>
             </li>
             <li class="page-item disabled" th:if="${pageWindowStart > 1}"><span class="page-link">…</span></li>
 
             <li class="page-item" th:each="i : ${#numbers.sequence(pageWindowStart, pageWindowEnd)}"
                 th:classappend="${i == talesPage.number} ? 'active'">
-                <a class="page-link" th:href="@{/tales(q=${q}, category=${selectedCategory}, page=${i})}"
+                <a class="page-link" th:href="@{/tales(q=${q}, category=${selectedCategory}, storyteller=${selectedStorytellerId}, page=${i})}"
                    th:text="${@persianDate.digits(i + 1)}">۱</a>
             </li>
 
             <li class="page-item disabled" th:if="${pageWindowEnd < talesPage.totalPages - 2}"><span class="page-link">…</span></li>
             <li class="page-item" th:if="${pageWindowEnd < talesPage.totalPages - 1}">
                 <a class="page-link"
-                   th:href="@{/tales(q=${q}, category=${selectedCategory}, page=${talesPage.totalPages - 1})}"
+                   th:href="@{/tales(q=${q}, category=${selectedCategory}, storyteller=${selectedStorytellerId}, page=${talesPage.totalPages - 1})}"
                    th:text="${@persianDate.digits(talesPage.totalPages)}">آخر</a>
             </li>
 
             <li class="page-item" th:classappend="${talesPage.last} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/tales(q=${q}, category=${selectedCategory}, page=${talesPage.number + 1})}">بعدی</a>
+                   th:href="@{/tales(q=${q}, category=${selectedCategory}, storyteller=${selectedStorytellerId}, page=${talesPage.number + 1})}">بعدی</a>
             </li>
         </ul>
     </nav>

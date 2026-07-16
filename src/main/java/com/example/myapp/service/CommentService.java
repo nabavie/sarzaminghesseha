@@ -33,12 +33,26 @@ public class CommentService {
         return commentRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
+    @Transactional(readOnly = true)
+    public List<Comment> forStoryteller(User storyteller) {
+        return commentRepository.findForStoryteller(storyteller);
+    }
+
+    public long countUnseenForStoryteller(User storyteller) {
+        return commentRepository.countUnseenForStoryteller(storyteller);
+    }
+
     @Transactional
     public Comment add(Tale tale, User author, Comment parent, String content) {
         // replies to replies attach to the top-level comment (one level of nesting)
         Comment topLevelParent = parent == null ? null
                 : parent.getParent() == null ? parent : parent.getParent();
         return commentRepository.save(new Comment(tale, author, topLevelParent, content.trim()));
+    }
+
+    @Transactional
+    public void markAllSeenForStoryteller(User storyteller) {
+        commentRepository.markAllSeenForStoryteller(storyteller);
     }
 
     @Transactional

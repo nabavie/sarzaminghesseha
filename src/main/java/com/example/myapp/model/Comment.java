@@ -45,6 +45,10 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    /** False until the tale's storyteller opens their comments inbox. */
+    @Column(nullable = false)
+    private boolean seenByStoryteller = false;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -56,6 +60,12 @@ public class Comment {
         this.author = author;
         this.parent = parent;
         this.content = content;
+        // Own comments on one's tales don't need a notification
+        if (author != null && tale != null && tale.getStoryteller() != null
+                && author.getId() != null
+                && author.getId().equals(tale.getStoryteller().getId())) {
+            this.seenByStoryteller = true;
+        }
     }
 
     public Long getId() {
@@ -104,6 +114,14 @@ public class Comment {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public boolean isSeenByStoryteller() {
+        return seenByStoryteller;
+    }
+
+    public void setSeenByStoryteller(boolean seenByStoryteller) {
+        this.seenByStoryteller = seenByStoryteller;
     }
 
     public Instant getCreatedAt() {

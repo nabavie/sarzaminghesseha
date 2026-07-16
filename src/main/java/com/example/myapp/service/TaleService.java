@@ -32,8 +32,26 @@ public class TaleService {
     }
 
     public Page<Tale> searchApproved(String q, Long categoryId, int page, int size) {
+        return searchApproved(q, categoryId, null, page, size);
+    }
+
+    public Page<Tale> searchApproved(String q, Long categoryId, Long storytellerId, int page, int size) {
         String query = q == null ? "" : q.trim();
-        return taleRepository.search(TaleStatus.APPROVED, query, categoryId, PageRequest.of(page, size));
+        return taleRepository.search(TaleStatus.APPROVED, query, categoryId, storytellerId,
+                PageRequest.of(page, size));
+    }
+
+    public Page<Tale> findApprovedByStoryteller(User storyteller, int page, int size) {
+        return taleRepository.findByStorytellerAndStatusOrderByCreatedAtDesc(
+                storyteller, TaleStatus.APPROVED, PageRequest.of(page, size));
+    }
+
+    public long countApprovedByStoryteller(User storyteller) {
+        return taleRepository.countByStorytellerAndStatus(storyteller, TaleStatus.APPROVED);
+    }
+
+    public List<Tale> findRecentApproved(int limit) {
+        return taleRepository.findRecentApproved(TaleStatus.APPROVED, PageRequest.of(0, limit));
     }
 
     public Page<Tale> findByStatus(TaleStatus status, Pageable pageable) {

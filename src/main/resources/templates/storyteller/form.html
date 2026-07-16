@@ -9,13 +9,31 @@
         <div class="col-lg-8">
             <div class="card p-4 p-md-5">
                 <h1 class="h3 mb-1" th:text="${tale == null ? '✨ قصهٔ تازه بگو' : '✏️ ویرایش قصه'}">قصهٔ تازه</h1>
-                <p class="text-muted mb-4">قصهٔ شما بعد از تأیید مدیر برای بچه‌ها منتشر می‌شود.</p>
+                <p class="text-muted mb-4">قصهٔ شما بعد از تأیید مدیر برای بچه‌ها منتشر می‌شود. اگر اینترنت کند است، اول صدا آپلود می‌شود و پیشرفت را می‌بینید.</p>
 
-                <form th:action="${tale == null} ? @{/storyteller/tales} : @{'/storyteller/tales/' + ${tale.id}}"
+                <form id="taleForm"
+                      th:action="${tale == null} ? @{/storyteller/tales} : @{'/storyteller/tales/' + ${tale.id}}"
+                      th:attr="data-upload-url=@{/storyteller/tales/upload-audio}"
                       th:object="${form}" method="post" enctype="multipart/form-data">
+
+                    <input type="hidden" id="audioFilename" th:field="*{audioFilename}">
+                    <input type="hidden" id="audioContentType" th:field="*{audioContentType}">
 
                     <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
                         <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">خطا</div>
+                    </div>
+
+                    <div class="alert alert-danger d-none" id="uploadError" role="alert"></div>
+
+                    <div class="mb-4 d-none" id="uploadProgressWrap">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span id="uploadProgressLabel">در حال آپلود صدا…</span>
+                        </div>
+                        <div class="progress" style="height: 1.1rem;">
+                            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">لطفاً صفحه را نبندید تا آپلود تمام شود.</p>
                     </div>
 
                     <div class="mb-4">
@@ -79,6 +97,7 @@
                                 <label for="audio" class="form-label">فایل صدای قصه را انتخاب کنید (mp3 و مانند آن):</label>
                                 <input type="file" class="form-control form-control-lg" id="audio"
                                        th:field="*{audio}" accept="audio/*">
+                                <div class="form-text">روی اینترنت کند، صدا جداگانه با نوار پیشرفت آپلود می‌شود.</div>
                             </div>
                             <div class="tab-pane fade text-center" id="recordPane" role="tabpanel">
                                 <p class="mb-3">دکمهٔ قرمز را بزنید و قصه را بگویید؛ وقتی تمام شد دوباره همان دکمه را بزنید.</p>
@@ -116,5 +135,6 @@
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
 <script th:src="@{/js/recorder.js}"></script>
+<script th:src="@{/js/tale-upload.js}"></script>
 </body>
 </html>

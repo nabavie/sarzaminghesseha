@@ -26,6 +26,14 @@ services:
       - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
       - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
       - --log.level=INFO
+      # Long audio uploads on slow connections: Traefik's default ~60s read timeout
+      # causes 504 Gateway Timeout before Spring finishes receiving the multipart body.
+      - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=600s
+      - --entrypoints.websecure.transport.respondingTimeouts.writeTimeout=600s
+      - --entrypoints.websecure.transport.respondingTimeouts.idleTimeout=180s
+      - --entrypoints.web.transport.respondingTimeouts.readTimeout=600s
+      - --entrypoints.web.transport.respondingTimeouts.writeTimeout=600s
+      - --entrypoints.web.transport.respondingTimeouts.idleTimeout=180s
     ports:
       - "80:80"
       - "443:443"

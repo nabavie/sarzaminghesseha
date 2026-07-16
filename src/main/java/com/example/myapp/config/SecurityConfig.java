@@ -66,10 +66,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/register", "/register/recovery-code", "/login",
                                 "/forgot-password", "/error",
-                                "/css/**", "/js/**", "/vendor/**", "/fonts/**", "/media/**").permitAll()
+                                "/css/**", "/js/**", "/img/**", "/vendor/**", "/fonts/**", "/media/**",
+                                "/robots.txt", "/sitemap.xml").permitAll()
                         // Public browsing and listening; the audio endpoint itself blocks
                         // non-approved tales for anyone but the owner or an admin.
-                        .requestMatchers(HttpMethod.GET, "/tales", "/tales/*", "/tales/*/audio").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/tales", "/tales/*", "/tales/*/audio",
+                                "/storytellers/*").permitAll()
                         .requestMatchers("/storyteller/**").hasRole("STORYTELLER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

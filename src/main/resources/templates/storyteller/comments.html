@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('نظرهای قصه‌های من')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h1 class="h3 mb-1">💬 نظرهای شنوندگان</h1>
+            <p class="text-muted mb-0">نظرهایی که روی قصه‌های شما نوشته شده‌اند</p>
+        </div>
+        <a th:href="@{/storyteller/tales}" class="btn btn-outline-primary">قصه‌های من</a>
+    </div>
+
+    <div class="alert alert-light border" th:if="${#lists.isEmpty(comments)}">
+        هنوز نظری روی قصه‌های شما ثبت نشده است.
+    </div>
+
+    <div class="vstack gap-3" th:unless="${#lists.isEmpty(comments)}">
+        <article class="card p-3 p-md-4 comment-notify-card"
+                 th:each="c : ${comments}"
+                 th:classappend="${c.seenByStoryteller} ? '' : 'comment-notify-unread'">
+            <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                <div>
+                    <span class="badge text-bg-warning" th:if="${!c.seenByStoryteller}">جدید</span>
+                    <a class="fw-bold text-decoration-none"
+                       th:href="@{/tales/{id}(id=${c.tale.id})}"
+                       th:text="${c.tale.title}">عنوان قصه</a>
+                </div>
+                <span class="small text-muted" th:text="${@persianDate.format(c.createdAt)}">تاریخ</span>
+            </div>
+            <div class="d-flex gap-3">
+                <img th:if="${c.author.avatarPath != null}"
+                     th:src="@{'/media/avatars/' + ${c.author.avatarPath}}"
+                     class="comment-avatar" alt="">
+                <div th:if="${c.author.avatarPath == null}" class="comment-avatar-placeholder">👤</div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold mb-1" th:text="${c.author.displayName}">نویسنده</div>
+                    <p class="mb-2" style="white-space: pre-line;" th:text="${c.content}">متن نظر</p>
+                    <a class="btn btn-sm btn-outline-primary"
+                       th:href="${'/tales/' + c.tale.id + '#comments'}">رفتن به قصه و پاسخ</a>
+                </div>
+            </div>
+        </article>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

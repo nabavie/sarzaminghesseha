@@ -1,15 +1,19 @@
 package com.example.myapp.controller;
 
+import com.example.myapp.controller.api.StorytellerUploadApiController;
 import com.example.myapp.dto.TaleForm;
 import com.example.myapp.model.Category;
 import com.example.myapp.model.Tale;
 import com.example.myapp.model.TaleStatus;
 import com.example.myapp.model.User;
 import com.example.myapp.service.CategoryService;
+import com.example.myapp.service.CommentService;
 import com.example.myapp.service.FileStorageService;
 import com.example.myapp.service.TaleService;
 import com.example.myapp.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -36,21 +40,34 @@ public class StorytellerController {
     private final CategoryService categoryService;
     private final UserService userService;
     private final FileStorageService storage;
+    private final CommentService commentService;
 
     public StorytellerController(TaleService taleService,
                                  CategoryService categoryService,
                                  UserService userService,
-                                 FileStorageService storage) {
+                                 FileStorageService storage,
+                                 CommentService commentService) {
         this.taleService = taleService;
         this.categoryService = categoryService;
         this.userService = userService;
         this.storage = storage;
+        this.commentService = commentService;
     }
 
     @GetMapping("/tales")
     public String myTales(Model model, Principal principal) {
         model.addAttribute("tales", taleService.findByStoryteller(currentUser(principal)));
         return "storyteller/tales";
+    }
+
+    @GetMapping("/comments")
+    public String comments(Model model, Principal principal) {
+        User user = currentUser(principal);
+        var comments = commentService.forStoryteller(user);
+        model.addAttribute("comments", comments);
+        // Mark after load so the template can still show "جدید" for this visit
+        commentService.markAllSeenForStoryteller(user);
+        return "storyteller/comments";
     }
 
     @GetMapping("/tales/new")
@@ -64,8 +81,11 @@ public class StorytellerController {
     public String create(@Valid @ModelAttribute("form") TaleForm form,
                          BindingResult result,
                          Model model,
-                         Principal principal) {
-        if (form.getAudio() == null || form.getAudio().isEmpty()) {
+                         Principal principal,
+                         HttpSession session) {
+        boolean hasPreUploaded = form.getAudioFilename() != null && !form.getAudioFilename().isBlank();
+        boolean hasMultipart = form.getAudio() != null && !form.getAudio().isEmpty();
+        if (!hasPreUploaded && !hasMultipart) {
             result.rejectValue("audio", "required", "لطفاً صدای قصه را انتخاب یا ضبط کنید");
         }
         if (result.hasErrors()) {
@@ -76,7 +96,7 @@ public class StorytellerController {
         try {
             Tale tale = new Tale();
             tale.setStoryteller(currentUser(principal));
-            applyForm(tale, form, true);
+            applyForm(tale, form, true, session);
             taleService.save(tale);
         } catch (IllegalArgumentException e) {
             result.reject("storage", e.getMessage());
@@ -105,7 +125,8 @@ public class StorytellerController {
                          @Valid @ModelAttribute("form") TaleForm form,
                          BindingResult result,
                          Model model,
-                         Principal principal) {
+                         Principal principal,
+                         HttpSession session) {
         Tale tale = editableTale(id, principal);
         if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.findAll());
@@ -113,7 +134,7 @@ public class StorytellerController {
             return "storyteller/form";
         }
         try {
-            applyForm(tale, form, false);
+            applyForm(tale, form, false, session);
             // any edit goes back through review
             tale.setStatus(TaleStatus.PENDING);
             tale.setReviewNote(null);
@@ -128,7 +149,7 @@ public class StorytellerController {
         return "redirect:/storyteller/tales?updated";
     }
 
-    private void applyForm(Tale tale, TaleForm form, boolean audioRequired) {
+    private void applyForm(Tale tale, TaleForm form, boolean audioRequired, HttpSession session) {
         tale.setTitle(form.getTitle().trim());
         tale.setDescription(form.getDescription().trim());
 
@@ -138,7 +159,27 @@ public class StorytellerController {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         tale.setCategories(categories);
 
-        if (form.getAudio() != null && !form.getAudio().isEmpty()) {
+        boolean appliedAudio = false;
+        String preUploaded = form.getAudioFilename() == null ? "" : form.getAudioFilename().trim();
+        if (!preUploaded.isEmpty()) {
+            Set<String> pending = StorytellerUploadApiController.pendingSet(session);
+            if (!pending.contains(preUploaded)) {
+                throw new IllegalArgumentException("فایل صوتی آپلودشده یافت نشد؛ لطفاً دوباره آپلود کنید");
+            }
+            Resource resource = storage.load(FileStorageService.AUDIO, preUploaded);
+            if (resource == null) {
+                throw new IllegalArgumentException("فایل صوتی آپلودشده یافت نشد؛ لطفاً دوباره آپلود کنید");
+            }
+            if (tale.getAudioPath() != null && !tale.getAudioPath().equals(preUploaded)) {
+                storage.delete(FileStorageService.AUDIO, tale.getAudioPath());
+            }
+            tale.setAudioPath(preUploaded);
+            String contentType = form.getAudioContentType();
+            tale.setAudioContentType(contentType == null || contentType.isBlank() ? "audio/mpeg" : contentType);
+            tale.setDurationSeconds(null);
+            pending.remove(preUploaded);
+            appliedAudio = true;
+        } else if (form.getAudio() != null && !form.getAudio().isEmpty()) {
             String newAudio = storage.storeAudio(form.getAudio());
             if (tale.getAudioPath() != null) {
                 storage.delete(FileStorageService.AUDIO, tale.getAudioPath());
@@ -146,7 +187,10 @@ public class StorytellerController {
             tale.setAudioPath(newAudio);
             tale.setAudioContentType(form.getAudio().getContentType());
             tale.setDurationSeconds(null);
-        } else if (audioRequired) {
+            appliedAudio = true;
+        }
+
+        if (audioRequired && !appliedAudio) {
             throw new IllegalArgumentException("لطفاً صدای قصه را انتخاب یا ضبط کنید");
         }
 
