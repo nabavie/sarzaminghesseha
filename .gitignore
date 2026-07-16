@@ -32,3 +32,4 @@ Thumbs.db
 # Spring Boot specific
 application-*.yml
 application-*.properties
+".env" 
