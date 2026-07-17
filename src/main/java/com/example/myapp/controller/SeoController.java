@@ -2,6 +2,7 @@ package com.example.myapp.controller;
 
 import com.example.myapp.model.Tale;
 import com.example.myapp.service.TaleService;
+import com.example.myapp.util.SiteUrl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -19,15 +20,17 @@ public class SeoController {
     private static final DateTimeFormatter W3C = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     private final TaleService taleService;
+    private final SiteUrl siteUrl;
 
-    public SeoController(TaleService taleService) {
+    public SeoController(TaleService taleService, SiteUrl siteUrl) {
         this.taleService = taleService;
+        this.siteUrl = siteUrl;
     }
 
     @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
     @ResponseBody
     public String robots(HttpServletRequest request) {
-        String base = baseUrl(request);
+        String base = siteUrl.base(request);
         return """
                 User-agent: *
                 Allow: /
@@ -45,7 +48,7 @@ public class SeoController {
     @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     @ResponseBody
     public String sitemap(HttpServletRequest request) {
-        String base = baseUrl(request);
+        String base = siteUrl.base(request);
         StringBuilder sb = new StringBuilder();
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         sb.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
@@ -72,21 +75,6 @@ public class SeoController {
         sb.append("    <changefreq>").append(changefreq).append("</changefreq>\n");
         sb.append("    <priority>").append(priority).append("</priority>\n");
         sb.append("  </url>\n");
-    }
-
-    private static String baseUrl(HttpServletRequest request) {
-        String proto = request.getHeader("X-Forwarded-Proto");
-        if (proto == null || proto.isBlank()) {
-            proto = request.getScheme();
-        }
-        String host = request.getHeader("X-Forwarded-Host");
-        if (host == null || host.isBlank()) {
-            host = request.getHeader("Host");
-        }
-        if (host == null || host.isBlank()) {
-            host = request.getServerName();
-        }
-        return proto + "://" + host;
     }
 
     private static String escape(String s) {

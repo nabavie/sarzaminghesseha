@@ -12,16 +12,21 @@
           th:content="${pageDescription != null ? pageDescription : defaultDescription}">
     <meta name="keywords" th:content="${defaultKeywords}">
     <meta name="robots" content="index, follow">
+    <link rel="canonical"
+          th:href="${pageCanonical != null ? pageCanonical : canonicalUrl}">
     <link rel="icon" type="image/png" th:href="@{/img/logo.png}">
     <link rel="apple-touch-icon" th:href="@{/img/logo.png}">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="سرزمین قصه‌ها">
     <meta property="og:locale" content="fa_IR">
+    <meta property="og:url"
+          th:content="${pageCanonical != null ? pageCanonical : canonicalUrl}">
     <meta property="og:title"
           th:content="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها | قصه صوتی و قصه شب'}">
     <meta property="og:description"
           th:content="${pageDescription != null ? pageDescription : defaultDescription}">
-    <meta property="og:image" th:content="${pageImage != null ? pageImage : '/img/logo.png'}">
+    <meta property="og:image"
+          th:content="${publicBaseUrl + (pageImage != null ? pageImage : '/img/logo.png')}">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title"
           th:content="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها'}">
