@@ -459,3 +459,22 @@ audio {
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
 }
+
+.top-gifts-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .35rem .75rem;
+    padding: .85rem 1.1rem;
+    border-radius: .75rem;
+    background: linear-gradient(120deg, rgba(255, 201, 92, .35) 0%, rgba(31, 138, 112, .12) 100%);
+    border: 1px solid rgba(255, 201, 92, .55);
+    color: var(--ink);
+    font-size: .95rem;
+    line-height: 1.7;
+}
+
+.top-gifts-banner strong {
+    color: var(--night-dark);
+    white-space: nowrap;
+}

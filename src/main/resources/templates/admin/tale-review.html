@@ -7,6 +7,9 @@
 <main class="container py-5">
     <a th:href="@{/admin/tales}" class="btn btn-outline-secondary btn-sm mb-3">← بازگشت به فهرست</a>
 
+    <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
+    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}">خطا</div>
+
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card p-4">
@@ -37,6 +40,29 @@
                     <audio controls preload="metadata" controlslist="nodownload"
                            th:src="@{|/tales/${tale.id}/audio|(t=${@mediaToken.issue(tale.id)})}"></audio>
                 </div>
+            </div>
+
+            <div class="card p-4 mt-4"
+                 th:if="${tale.status.name() == 'PENDING' or tale.status.name() == 'APPROVED'}">
+                <h2 class="h5 mb-3">ویرایش توضیح و تصویر</h2>
+                <p class="text-muted small mb-3">
+                    وضعیت قصه عوض نمی‌شود؛ فقط توضیح و تصویر روی همین صفحه به‌روز می‌شود.
+                </p>
+                <form th:action="@{'/admin/tales/' + ${tale.id} + '/edit-content'}" method="post"
+                      enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-bold">توضیح قصه</label>
+                        <textarea class="form-control" id="description" name="description" rows="6"
+                                  required th:text="${tale.description}"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cover" class="form-label fw-bold">تصویر جلد (اختیاری)</label>
+                        <input type="file" class="form-control" id="cover" name="cover"
+                               accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
+                        <div class="form-text">اگر فایلی انتخاب نکنید، تصویر فعلی می‌ماند.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                </form>
             </div>
         </div>
 

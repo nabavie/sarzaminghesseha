@@ -34,6 +34,10 @@ public class User {
     @Column(nullable = false, length = 100)
     private String displayName;
 
+    /** Optional Iranian mobile, stored as {@code 09#########}; null when not provided. */
+    @Column(length = 20)
+    private String mobile;
+
     private String avatarPath;
 
     /** BCrypt hash of the one-time password-recovery code; null until one is issued. */
@@ -94,6 +98,14 @@ public class User {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
     public String getAvatarPath() {

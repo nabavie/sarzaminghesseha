@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('نظر و پیشنهاد')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card p-4 p-md-5">
+                <h1 class="h3 text-center mb-2">نظر و پیشنهاد</h1>
+                <p class="text-center text-muted mb-4">
+                    ایده، پیشنهاد یا انتقاد خود را برای ما بنویسید. پیام شما به تیم مدیریت می‌رسد.
+                </p>
+
+                <div class="alert alert-success" th:if="${success != null}" th:text="${success}">ثبت شد</div>
+
+                <form th:action="@{/feedback}" th:object="${form}" method="post">
+                    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                        <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">خطا</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-bold">نام شما</label>
+                        <input type="text" class="form-control form-control-lg" id="name"
+                               th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                               placeholder="مثلاً: سارا">
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="message" class="form-label fw-bold">نظر یا پیشنهاد</label>
+                        <textarea class="form-control form-control-lg" id="message" rows="5"
+                                  th:field="*{message}" th:classappend="${#fields.hasErrors('message')} ? 'is-invalid'"
+                                  placeholder="هر چه دوست دارید بگویید…"></textarea>
+                        <div class="invalid-feedback" th:errors="*{message}"></div>
+                    </div>
+                    <button type="submit" class="btn btn-warm btn-big w-100">ارسال پیام</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

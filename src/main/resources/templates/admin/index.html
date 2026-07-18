@@ -46,7 +46,12 @@
         <a th:href="@{/admin/tales}" class="btn btn-primary">بررسی قصه‌ها</a>
         <a th:href="@{/admin/categories}" class="btn btn-outline-primary">مدیریت دسته‌ها</a>
         <a th:href="@{/admin/requests}" class="btn btn-outline-primary">درخواست‌های قصه‌گویی</a>
-        <a th:href="@{/admin/comments}" class="btn btn-outline-primary">نظرها</a>
+        <a th:href="@{/admin/comments}" class="btn btn-outline-primary">نظرهای قصه‌ها</a>
+        <a th:href="@{/admin/feedback}" class="btn btn-outline-primary position-relative">
+            نظر و پیشنهاد
+            <span class="nav-badge" th:if="${unseenFeedbackCount != null && unseenFeedbackCount > 0}"
+                  th:text="${@persianDate.digits(unseenFeedbackCount)}">۰</span>
+        </a>
         <a th:href="@{/admin/users}" class="btn btn-outline-primary">کاربران</a>
     </div>
 </main>

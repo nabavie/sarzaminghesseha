@@ -5,6 +5,7 @@ import com.example.myapp.dto.RegistrationForm;
 import com.example.myapp.model.User;
 import com.example.myapp.service.PasswordRecoveryService;
 import com.example.myapp.service.UserService;
+import com.example.myapp.util.MobileNumbers;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -60,6 +61,13 @@ public class AuthController {
                 && form.getPassword() != null
                 && !form.getPassword().equals(form.getConfirmPassword())) {
             result.rejectValue("confirmPassword", "mismatch", "رمز عبور و تکرار آن یکسان نیستند");
+        }
+        if (!result.hasFieldErrors("mobile")) {
+            try {
+                form.setMobile(MobileNumbers.normalizeOptional(form.getMobile()));
+            } catch (IllegalArgumentException e) {
+                result.rejectValue("mobile", "invalid", e.getMessage());
+            }
         }
         if (result.hasErrors()) {
             return "auth/register";

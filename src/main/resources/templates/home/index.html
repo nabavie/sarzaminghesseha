@@ -38,8 +38,15 @@
 
         <!-- Top 5 of the month -->
         <section class="mb-5" th:unless="${#lists.isEmpty(topTales)}">
-            <h2 class="h4 mb-1">🏆 ۵ قصهٔ برتر <span th:text="${topMonthName != null ? topMonthName : 'این ماه'}">این ماه</span></h2>
-            <p class="text-muted mb-4">قصه‌هایی که بچه‌ها این ماه بیشتر از همه دوست داشتند (بر پایهٔ امتیازهای همین ماه)</p>
+            <h2 class="h4 mb-1">🏆 ۵ قصه برتر <span th:text="${topMonthName != null ? topMonthName : 'این ماه'}">این ماه</span></h2>
+            <p class="text-muted mb-3">قصه‌هایی که بچه‌ها این ماه بیشتر از همه دوست داشتند (بر پایهٔ امتیازهای همین ماه)</p>
+            <div class="top-gifts-banner mb-4" role="note">
+                <strong>هدیه برای ۵ قصه برتر هر ماه!</strong>
+                <span>
+                    هر ماه به قصه‌گویانِ پنج قصه اول هدیه ویژه می‌دهیم.
+                    با گوش دادن و امتیاز دادن، قصه محبوبت را بالا ببر و قصه‌گو را خوشحال کن.
+                </span>
+            </div>
             <div class="row g-4">
                 <div class="col-sm-6 col-lg-4 col-xl" th:each="tale, stat : ${topTales}">
                     <div class="card tale-card position-relative">

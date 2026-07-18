@@ -65,7 +65,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/register", "/register/recovery-code", "/login",
-                                "/forgot-password", "/error",
+                                "/forgot-password", "/feedback", "/error",
                                 "/css/**", "/js/**", "/img/**", "/vendor/**", "/fonts/**", "/media/**",
                                 "/robots.txt", "/sitemap.xml").permitAll()
                         // Public browsing and listening; the audio endpoint itself blocks

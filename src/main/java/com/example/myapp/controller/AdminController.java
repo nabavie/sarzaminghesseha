@@ -2,6 +2,7 @@ package com.example.myapp.controller;
 
 import com.example.myapp.model.TaleStatus;
 import com.example.myapp.repository.UserRepository;
+import com.example.myapp.service.SiteFeedbackService;
 import com.example.myapp.service.StorytellerRequestService;
 import com.example.myapp.service.TaleService;
 import org.springframework.stereotype.Controller;
@@ -16,13 +17,16 @@ public class AdminController {
     private final TaleService taleService;
     private final UserRepository userRepository;
     private final StorytellerRequestService requestService;
+    private final SiteFeedbackService feedbackService;
 
     public AdminController(TaleService taleService,
                            UserRepository userRepository,
-                           StorytellerRequestService requestService) {
+                           StorytellerRequestService requestService,
+                           SiteFeedbackService feedbackService) {
         this.taleService = taleService;
         this.userRepository = userRepository;
         this.requestService = requestService;
+        this.feedbackService = feedbackService;
     }
 
     @GetMapping
@@ -32,6 +36,7 @@ public class AdminController {
         model.addAttribute("rejectedCount", taleService.countByStatus(TaleStatus.REJECTED));
         model.addAttribute("userCount", userRepository.count());
         model.addAttribute("pendingRequestCount", requestService.pendingCount());
+        model.addAttribute("unseenFeedbackCount", feedbackService.countUnseen());
         return "admin/index";
     }
 }

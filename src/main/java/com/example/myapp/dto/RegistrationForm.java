@@ -24,6 +24,10 @@ public class RegistrationForm {
     @NotBlank(message = "لطفاً رمز عبور را دوباره بنویسید")
     private String confirmPassword;
 
+    /** Optional; validated/normalized in AuthController via MobileNumbers. */
+    @Size(max = 20, message = "شماره موبایل خیلی طولانی است")
+    private String mobile;
+
     private boolean storyteller;
 
     public String getDisplayName() {
@@ -56,6 +60,14 @@ public class RegistrationForm {
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
     public boolean isStoryteller() {

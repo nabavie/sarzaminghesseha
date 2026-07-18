@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('نظرها و پیشنهادها')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <h1 class="h3 mb-0">نظرها و پیشنهادها</h1>
+        <span class="badge text-bg-warning" th:if="${unseenCount != null && unseenCount > 0}"
+              th:text="${@persianDate.digits(unseenCount)} + ' خوانده‌نشده'">۰ خوانده‌نشده</span>
+    </div>
+
+    <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
+
+    <div class="alert alert-info" th:if="${feedbackPage.isEmpty()}">هنوز پیامی ثبت نشده است.</div>
+
+    <div class="card" th:unless="${feedbackPage.isEmpty()}">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>نام</th>
+                    <th>پیام</th>
+                    <th>تاریخ</th>
+                    <th>وضعیت</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${feedbackPage.content}"
+                    th:classappend="${!item.seen} ? 'table-warning'">
+                    <td class="fw-bold" th:text="${item.name}">نام</td>
+                    <td style="white-space: pre-line; max-width: 28rem;" th:text="${item.message}">متن</td>
+                    <td th:text="${@persianDate.format(item.createdAt)}">تاریخ</td>
+                    <td>
+                        <span class="badge" th:classappend="${item.seen} ? 'text-bg-secondary' : 'text-bg-warning'"
+                              th:text="${item.seen} ? 'خوانده‌شده' : 'جدید'">وضعیت</span>
+                    </td>
+                    <td class="text-start text-nowrap">
+                        <form th:if="${!item.seen}"
+                              th:action="@{'/admin/feedback/' + ${item.id} + '/seen'}" method="post"
+                              class="d-inline">
+                            <input type="hidden" name="page" th:value="${feedbackPage.number}">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">خواندم</button>
+                        </form>
+                        <form th:action="@{'/admin/feedback/' + ${item.id} + '/delete'}" method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('این پیام حذف شود؟');">
+                            <input type="hidden" name="page" th:value="${feedbackPage.number}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav class="mt-4" th:if="${feedbackPage.totalPages > 1}" aria-label="صفحه‌ها">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, feedbackPage.totalPages - 1)}"
+                th:classappend="${i == feedbackPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/admin/feedback(page=${i})}"
+                   th:text="${@persianDate.digits(i + 1)}">۱</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

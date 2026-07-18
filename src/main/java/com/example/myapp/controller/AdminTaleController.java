@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -53,6 +55,20 @@ public class AdminTaleController {
     public String reject(@PathVariable Long id, @RequestParam(required = false) String note) {
         taleService.reject(tale(id), note);
         return "redirect:/admin/tales?rejected";
+    }
+
+    @PostMapping("/{id}/edit-content")
+    public String editContent(@PathVariable Long id,
+                              @RequestParam String description,
+                              @RequestParam(required = false) MultipartFile cover,
+                              RedirectAttributes redirect) {
+        try {
+            taleService.adminUpdateContent(tale(id), description, cover);
+            redirect.addFlashAttribute("success", "توضیح و تصویر قصه به‌روز شد");
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/tales/" + id;
     }
 
     private Tale tale(Long id) {

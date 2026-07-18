@@ -28,6 +28,17 @@
                         <div class="form-text">با حروف انگلیسی؛ برای ورود به حساب استفاده می‌شود.</div>
                     </div>
                     <div class="mb-3">
+                        <label for="mobile" class="form-label fw-bold">
+                            شماره موبایل
+                            <span class="text-muted fw-normal">(اختیاری)</span>
+                        </label>
+                        <input type="tel" class="form-control form-control-lg" id="mobile" dir="ltr"
+                               th:field="*{mobile}" th:classappend="${#fields.hasErrors('mobile')} ? 'is-invalid'"
+                               autocomplete="tel" placeholder="09123456789" inputmode="tel">
+                        <div class="invalid-feedback" th:errors="*{mobile}"></div>
+                        <div class="form-text">می‌توانید خالی بگذارید؛ در صورت وارد کردن، شمارهٔ ایرانی باشد.</div>
+                    </div>
+                    <div class="mb-3">
                         <label for="password" class="form-label fw-bold">رمز عبور</label>
                         <div class="input-group has-validation">
                             <input type="password" class="form-control form-control-lg" id="password"

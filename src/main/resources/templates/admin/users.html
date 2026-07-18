@@ -17,6 +17,7 @@
                 <tr>
                     <th>نام</th>
                     <th>نام کاربری</th>
+                    <th>موبایل</th>
                     <th>نقش‌ها</th>
                     <th>تاریخ عضویت</th>
                     <th>وضعیت</th>
@@ -27,6 +28,7 @@
                 <tr th:each="user : ${usersPage.content}" th:classappend="${!user.enabled} ? 'table-secondary'">
                     <td class="fw-bold" th:text="${user.displayName}">نام</td>
                     <td dir="ltr" th:text="${user.username}">username</td>
+                    <td dir="ltr" th:text="${user.mobile != null ? user.mobile : '—'}">—</td>
                     <td>
                         <span class="badge text-bg-secondary me-1" th:each="role : ${user.roles}"
                               th:text="${role.name() == 'ADMIN' ? 'مدیر' : role.name() == 'STORYTELLER' ? 'قصه‌گو' : 'شنونده'}">نقش</span>

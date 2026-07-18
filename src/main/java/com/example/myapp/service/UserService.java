@@ -45,6 +45,7 @@ public class UserService {
                 form.getUsername().trim(),
                 passwordEncoder.encode(form.getPassword()),
                 form.getDisplayName().trim());
+        user.setMobile(form.getMobile());
         user.getRoles().add(Role.LISTENER);
         if (form.isStoryteller()) {
             user.getRoles().add(Role.STORYTELLER);
