@@ -58,6 +58,14 @@ services:
       MEDIA_TOKEN_SECRET: ${MEDIA_TOKEN_SECRET}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://sarzaminghesseha.com}
       SERVER_PORT: 8081
+      # Belt-and-suspenders if the prod profile file is missing from an older image
+      SPRING_THYMELEAF_CACHE: "true"
+      SPRING_JPA_SHOW_SQL: "false"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SERVER_COMPRESSION_ENABLED: "true"
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: "true"
+      SERVER_SERVLET_SESSION_COOKIE_HTTP_ONLY: "true"
+      SERVER_SERVLET_SESSION_COOKIE_SAME_SITE: lax
     volumes:
       # User-uploaded audio/covers/avatars survive redeploys
       - uploads:/app/uploads
@@ -78,11 +86,16 @@ services:
       - traefik.http.routers.qesseha.tls.certresolver=letsencrypt
       - "traefik.http.routers.qesseha.tls.domains[0].main=sarzaminghesseha.com"
       - traefik.http.services.qesseha.loadbalancer.server.port=8081
-      # Security headers
+      # Security headers (soft / non-breaking)
       - traefik.http.middlewares.qesseha-headers.headers.stsSeconds=31536000
       - traefik.http.middlewares.qesseha-headers.headers.stsIncludeSubdomains=true
       - traefik.http.middlewares.qesseha-headers.headers.contentTypeNosniff=true
-      - traefik.http.routers.qesseha.middlewares=qesseha-headers
+      - traefik.http.middlewares.qesseha-headers.headers.frameDeny=true
+      - traefik.http.middlewares.qesseha-headers.headers.browserXssFilter=true
+      - traefik.http.middlewares.qesseha-headers.headers.referrerPolicy=strict-origin-when-cross-origin
+      # Gzip at the edge for HTML/CSS/JS (safe; complements Spring compression)
+      - traefik.http.middlewares.qesseha-compress.compress=true
+      - traefik.http.routers.qesseha.middlewares=qesseha-headers,qesseha-compress
       # Secondary domain: permanent redirect to .com (consolidates SEO signals)
       - "traefik.http.routers.qesseha-ir.rule=Host(`sarzaminghesseha.ir`)"
       - traefik.http.routers.qesseha-ir.entrypoints=websecure
@@ -92,7 +105,7 @@ services:
       - "traefik.http.middlewares.qesseha-ir-redirect.redirectregex.regex=^https://sarzaminghesseha\\.ir(.*)"
       - "traefik.http.middlewares.qesseha-ir-redirect.redirectregex.replacement=https://sarzaminghesseha.com$${1}"
       - "traefik.http.middlewares.qesseha-ir-redirect.redirectregex.permanent=true"
-      - traefik.http.routers.qesseha-ir.middlewares=qesseha-ir-redirect,qesseha-headers
+      - traefik.http.routers.qesseha-ir.middlewares=qesseha-ir-redirect,qesseha-headers,qesseha-compress
 
   db:
     image: mysql:8.4

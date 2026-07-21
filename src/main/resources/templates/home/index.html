@@ -7,7 +7,11 @@
 <main>
     <section class="hero mb-5">
         <div class="container text-center">
-            <img th:src="@{/img/logo.png}" alt="سرزمین قصه‌ها" class="hero-logo mb-3" width="200" height="200">
+            <picture>
+                <source type="image/webp" th:srcset="@{/img/logo-hero.webp}">
+                <img th:src="@{/img/logo-hero.png}" alt="سرزمین قصه‌ها" class="hero-logo mb-3"
+                     width="200" height="200" fetchpriority="high" decoding="async">
+            </picture>
             <h1 class="display-5 mb-3">سرزمین قصه‌ها</h1>
             <p class="fs-5 mb-2">قصه صوتی و قصه شب — داستان برای کودکان و نوجوانان با صدای قصه‌گویان</p>
             <p class="mb-4 opacity-75">قصه گویی، قصه شب صوتی و داستان صوتی برای همهٔ دوستداران قصه</p>
@@ -53,7 +57,7 @@
                         <span class="top-rank" th:text="${@persianDate.digits(stat.count)}">۱</span>
                         <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
                             <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
-                                 class="tale-cover" alt="تصویر قصه">
+                                 class="tale-cover" alt="تصویر قصه" loading="lazy" decoding="async">
                             <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">🏆</div>
                         </a>
                         <div class="card-body">
@@ -84,7 +88,7 @@
                     <div class="card tale-card">
                         <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
                             <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
-                                 class="tale-cover" alt="تصویر قصه">
+                                 class="tale-cover" alt="تصویر قصه" loading="lazy" decoding="async">
                             <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
                         </a>
                         <div class="card-body">

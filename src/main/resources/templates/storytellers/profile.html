@@ -34,7 +34,7 @@
             <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
                 <div class="card tale-card">
                     <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
-                         class="tale-cover" alt="تصویر قصه">
+                         class="tale-cover" alt="تصویر قصه" loading="lazy" decoding="async">
                     <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
                     <div class="card-body">
                         <h3 class="h6 card-title fw-bold" th:text="${tale.title}">عنوان</h3>

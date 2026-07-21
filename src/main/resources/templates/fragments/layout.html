@@ -14,8 +14,8 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical"
           th:href="${pageCanonical != null ? pageCanonical : canonicalUrl}">
-    <link rel="icon" type="image/png" th:href="@{/img/logo.png}">
-    <link rel="apple-touch-icon" th:href="@{/img/logo.png}">
+    <link rel="icon" type="image/png" th:href="@{/img/logo-nav.png}">
+    <link rel="apple-touch-icon" th:href="@{/img/logo-nav.png}">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="سرزمین قصه‌ها">
     <meta property="og:locale" content="fa_IR">
@@ -26,12 +26,14 @@
     <meta property="og:description"
           th:content="${pageDescription != null ? pageDescription : defaultDescription}">
     <meta property="og:image"
-          th:content="${publicBaseUrl + (pageImage != null ? pageImage : '/img/logo.png')}">
+          th:content="${publicBaseUrl + (pageImage != null ? pageImage : '/img/logo-hero.png')}">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title"
           th:content="${title != null ? title + ' | سرزمین قصه‌ها' : 'سرزمین قصه‌ها'}">
     <meta name="twitter:description"
           th:content="${pageDescription != null ? pageDescription : defaultDescription}">
+    <link rel="preload" th:href="@{/fonts/vazirmatn/Vazirmatn-Regular.woff2}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" th:href="@{/img/logo-hero.webp}" as="image" type="image/webp">
     <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.rtl.min.css}">
     <link rel="stylesheet" th:href="@{/fonts/vazirmatn.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
@@ -41,7 +43,10 @@
 <nav th:fragment="navbar" class="navbar navbar-expand-lg app-navbar">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
-            <img th:src="@{/img/logo.png}" alt="سرزمین قصه‌ها" class="brand-logo" width="44" height="44">
+            <picture>
+                <source type="image/webp" th:srcset="@{/img/logo-nav.webp}">
+                <img th:src="@{/img/logo-nav.png}" alt="سرزمین قصه‌ها" class="brand-logo" width="44" height="44">
+            </picture>
             <span>سرزمین قصه‌ها</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
@@ -93,7 +98,10 @@
 <footer th:fragment="footer" class="app-footer">
     <div class="container text-center py-4">
         <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
-            <img th:src="@{/img/logo.png}" alt="سرزمین قصه‌ها" class="brand-logo brand-logo-sm" width="40" height="40">
+            <picture>
+                <source type="image/webp" th:srcset="@{/img/logo-nav.webp}">
+                <img th:src="@{/img/logo-nav.png}" alt="سرزمین قصه‌ها" class="brand-logo brand-logo-sm" width="40" height="40" loading="lazy" decoding="async">
+            </picture>
             <div class="fs-5 mb-0">سرزمین قصه‌ها</div>
         </div>
         <p class="mb-2 small">قصه صوتی، قصه شب و داستان برای کودکان و نوجوانان — پلی میان قصه‌های کهن ایران و شنوندگان امروز</p>

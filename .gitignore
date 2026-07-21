@@ -30,9 +30,11 @@ Thumbs.db
 *.tmp
 *.bak
 
-# Spring Boot specific
+# Spring Boot local/secret profile overrides (keep application-prod.properties in git —
+# it has no secrets; values come from environment variables)
 application-*.yml
 application-*.properties
+!application-prod.properties
 
 # AI / local tooling
 CLAUDE.md

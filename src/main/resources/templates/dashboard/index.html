@@ -34,7 +34,8 @@
                         <div class="d-flex align-items-center gap-3">
                             <img th:if="${p.tale.coverPath != null}"
                                  th:src="@{'/media/covers/' + ${p.tale.coverPath}}"
-                                 class="rounded-3" style="width:64px;height:64px;object-fit:cover;" alt="">
+                                 class="rounded-3" style="width:64px;height:64px;object-fit:cover;" alt=""
+                                 loading="lazy" decoding="async">
                             <div th:if="${p.tale.coverPath == null}"
                                  class="rounded-3 tale-cover-placeholder" style="width:64px;height:64px;font-size:1.6rem;">📖</div>
                             <div class="flex-grow-1">
@@ -67,7 +68,7 @@
                 <a th:href="@{'/tales/' + ${fav.tale.id}}" class="text-decoration-none text-reset">
                     <div class="card tale-card">
                         <img th:if="${fav.tale.coverPath != null}" th:src="@{'/media/covers/' + ${fav.tale.coverPath}}"
-                             class="tale-cover" alt="">
+                             class="tale-cover" alt="" loading="lazy" decoding="async">
                         <div th:if="${fav.tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
                         <div class="card-body">
                             <h3 class="h6 card-title fw-bold" th:text="${fav.tale.title}">عنوان</h3>

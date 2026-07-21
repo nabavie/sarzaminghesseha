@@ -86,3 +86,7 @@ already exist, so `.env` seed passwords won't apply to imported rows.)
   login rate-limiting sees real client IPs (Tomcat only trusts the header from
   the private-network proxy, so clients can't spoof it)
 - SQL logging and Thymeleaf template reloading are off in the prod profile
+  (`application-prod.properties` + compose env overrides)
+- Response compression (gzip) at Traefik and Spring Boot
+- Soft security headers: `X-Frame-Options`, XSS filter, Referrer-Policy, nosniff
+- Static assets (`/css`, `/js`, `/fonts`, `/vendor`, `/img`) cache for 30 days in prod
