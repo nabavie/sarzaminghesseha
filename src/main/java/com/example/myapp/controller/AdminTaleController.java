@@ -60,11 +60,12 @@ public class AdminTaleController {
     @PostMapping("/{id}/edit-content")
     public String editContent(@PathVariable Long id,
                               @RequestParam String description,
+                              @RequestParam(required = false) String seoDescription,
                               @RequestParam(required = false) MultipartFile cover,
                               RedirectAttributes redirect) {
         try {
-            taleService.adminUpdateContent(tale(id), description, cover);
-            redirect.addFlashAttribute("success", "توضیح و تصویر قصه به‌روز شد");
+            taleService.adminUpdateContent(tale(id), description, seoDescription, cover);
+            redirect.addFlashAttribute("success", "توضیح، متن سئو و تصویر قصه به‌روز شد");
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("error", e.getMessage());
         }

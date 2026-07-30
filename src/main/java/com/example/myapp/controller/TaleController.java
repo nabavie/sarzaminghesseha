@@ -109,12 +109,20 @@ public class TaleController {
         model.addAttribute("resumeSeconds", user == null ? 0
                 : progressService.find(user, tale).map(ListeningProgress::getSeconds).orElse(0));
 
-        String desc = tale.getDescription() == null ? "" : tale.getDescription().trim();
-        if (desc.length() > 160) {
-            desc = desc.substring(0, 157) + "…";
+        String desc = null;
+        if (tale.getSeoDescription() != null && !tale.getSeoDescription().isBlank()) {
+            desc = tale.getSeoDescription().trim();
+        } else {
+            desc = tale.getDescription() == null ? "" : tale.getDescription().trim();
+            if (desc.length() > 160) {
+                desc = desc.substring(0, 157) + "…";
+            }
+            if (desc.isEmpty()) {
+                desc = "قصه صوتی «" + tale.getTitle() + "» — قصه شب و داستان برای کودکان و نوجوانان در سرزمین قصه‌ها";
+            }
         }
-        if (desc.isEmpty()) {
-            desc = "قصه صوتی «" + tale.getTitle() + "» — قصه شب و داستان برای کودکان و نوجوانان در سرزمین قصه‌ها";
+        if (desc.length() > 320) {
+            desc = desc.substring(0, 317) + "…";
         }
         model.addAttribute("pageDescription", desc);
         model.addAttribute("pageImage", tale.getCoverPath() != null

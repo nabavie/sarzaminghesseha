@@ -32,6 +32,10 @@ public class Tale {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    /** Admin-only text for meta description / Open Graph; never shown on the page body. */
+    @Column(length = 320)
+    private String seoDescription;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "storyteller_id")
     private User storyteller;
@@ -85,6 +89,14 @@ public class Tale {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getSeoDescription() {
+        return seoDescription;
+    }
+
+    public void setSeoDescription(String seoDescription) {
+        this.seoDescription = seoDescription;
     }
 
     public User getStoryteller() {

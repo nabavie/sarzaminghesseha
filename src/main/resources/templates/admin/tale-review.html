@@ -44,16 +44,26 @@
 
             <div class="card p-4 mt-4"
                  th:if="${tale.status.name() == 'PENDING' or tale.status.name() == 'APPROVED'}">
-                <h2 class="h5 mb-3">ویرایش توضیح و تصویر</h2>
+                <h2 class="h5 mb-3">ویرایش توضیح، سئو و تصویر</h2>
                 <p class="text-muted small mb-3">
-                    وضعیت قصه عوض نمی‌شود؛ فقط توضیح و تصویر روی همین صفحه به‌روز می‌شود.
+                    وضعیت قصه عوض نمی‌شود؛ فقط توضیح، متن سئو و تصویر روی همین صفحه به‌روز می‌شود.
                 </p>
                 <form th:action="@{'/admin/tales/' + ${tale.id} + '/edit-content'}" method="post"
                       enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="description" class="form-label fw-bold">توضیح قصه</label>
+                        <label for="description" class="form-label fw-bold">توضیح قصه (نمایش به کاربر)</label>
                         <textarea class="form-control" id="description" name="description" rows="6"
                                   required th:text="${tale.description}"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="seoDescription" class="form-label fw-bold">توضیح سئو (فقط برای موتور جست‌وجو)</label>
+                        <textarea class="form-control" id="seoDescription" name="seoDescription" rows="3"
+                                  maxlength="320" th:text="${tale.seoDescription}"
+                                  placeholder="مثلاً: قصه صوتی شب برای کودکان دربارهٔ …"></textarea>
+                        <div class="form-text">
+                            در صفحهٔ قصه دیده نمی‌شود؛ فقط در تگ meta description و اشتراک‌گذاری شبکه‌های اجتماعی استفاده می‌شود.
+                            حدود ۱۵۰ تا ۱۶۰ کاراکتر بهتر است. اگر خالی بگذارید، از توضیح قصه استفاده می‌شود.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="cover" class="form-label fw-bold">تصویر جلد (اختیاری)</label>

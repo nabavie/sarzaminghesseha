@@ -87,11 +87,12 @@ public class TaleService {
     }
 
     /**
-     * Admin-only content tweak: description and optional cover. Does not change
-     * status, review note, audio, title, categories, or author — approved tales stay live.
+     * Admin-only content tweak: description, optional SEO meta text, and optional cover.
+     * Does not change status, review note, audio, title, categories, or author —
+     * approved tales stay live.
      */
     @Transactional
-    public Tale adminUpdateContent(Tale tale, String description, MultipartFile cover) {
+    public Tale adminUpdateContent(Tale tale, String description, String seoDescription, MultipartFile cover) {
         TaleStatus status = tale.getStatus();
         if (status != TaleStatus.PENDING && status != TaleStatus.APPROVED) {
             throw new IllegalArgumentException("فقط قصه‌های در انتظار یا منتشرشده قابل ویرایش هستند");
@@ -104,6 +105,17 @@ public class TaleService {
             throw new IllegalArgumentException("توضیح خیلی طولانی است");
         }
         tale.setDescription(trimmed);
+
+        if (seoDescription == null || seoDescription.isBlank()) {
+            tale.setSeoDescription(null);
+        } else {
+            String seo = seoDescription.trim().replaceAll("\\s+", " ");
+            if (seo.length() > 320) {
+                throw new IllegalArgumentException("متن سئو حداکثر ۳۲۰ کاراکتر باشد");
+            }
+            tale.setSeoDescription(seo);
+        }
+
         if (cover != null && !cover.isEmpty()) {
             String newCover = storage.storeCover(cover);
             if (tale.getCoverPath() != null) {
