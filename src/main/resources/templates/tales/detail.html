@@ -67,6 +67,35 @@
                     <div class="small text-muted mt-1" th:if="${resumeSeconds > 0}">
                         از جایی که بودی ادامه می‌دهیم ▶️
                     </div>
+                    <div class="small text-muted mt-2" sec:authorize="!isAuthenticated()">
+                        مهمان‌ها می‌توانند دو قصه را رایگان بشنوند؛ برای قصه‌های بیشتر
+                        <a th:href="@{/register}">ثبت‌نام</a> کنید.
+                    </div>
+                </div>
+
+                <div class="modal fade" id="guestSignupModal" tabindex="-1" aria-labelledby="guestSignupModalLabel"
+                     aria-hidden="true" sec:authorize="!isAuthenticated()">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header border-0 pb-0">
+                                <h2 class="modal-title fs-5" id="guestSignupModalLabel">قصه‌های بیشتری می‌خواهی؟</h2>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="mb-0">
+                                    دو قصه را رایگان شنیدی. برای شنیدن قصه‌های بیشتر، ذخیره کردن قصه‌ها و نوشتن نظر،
+                                    رایگان ثبت‌نام کن.
+                                </p>
+                            </div>
+                            <div class="modal-footer border-0 flex-column align-items-stretch gap-2">
+                                <a th:href="@{/register}" class="btn btn-primary">ثبت‌نام رایگان</a>
+                                <a th:href="@{/login}" class="btn btn-outline-primary">ورود</a>
+                                <button type="button" class="btn btn-link text-muted" id="guestContinueListen">
+                                    فعلاً گوش می‌دهم
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <h2 class="h5">دربارهٔ این قصه</h2>
