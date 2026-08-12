@@ -115,16 +115,19 @@
     setUpAutoNext();
 
     /**
-     * When a tale finishes, offer the first related tale after a short countdown.
-     * Guests are left out on purpose: they have a two-tale free limit, and hopping
-     * them onto a third tale would just hit the signup modal.
+     * When a tale finishes, offer the playlist-next tale after a short countdown.
+     * That id comes from the server (next older in the same category) so the two
+     * newest tales cannot ping-pong. Guests are left out on purpose: they have a
+     * two-tale free limit, and hopping them onto a third tale would just hit the
+     * signup modal.
      */
     function setUpAutoNext() {
         if (!authenticated) return;
 
         var section = document.getElementById('relatedTales');
-        var next = section && section.querySelector('[data-related-id]');
-        if (!next) return;
+        var nextId = section && section.getAttribute('data-next-id');
+        var nextTitle = section && section.getAttribute('data-next-title');
+        if (!nextId) return;
 
         var toggle = document.getElementById('autoNextToggle');
         var banner = document.getElementById('autoNextBanner');
@@ -164,7 +167,7 @@
             cancel();
 
             var remaining = AUTO_NEXT_SECONDS;
-            if (titleEl) titleEl.textContent = next.getAttribute('data-related-title') || '';
+            if (titleEl) titleEl.textContent = nextTitle || '';
             if (countEl) countEl.textContent = faDigits(remaining);
             if (banner) {
                 banner.classList.remove('d-none');
@@ -176,7 +179,7 @@
                 if (remaining <= 0) {
                     clearInterval(countdown);
                     countdown = null;
-                    window.location.href = '/tales/' + next.getAttribute('data-related-id') + '?autoplay=1';
+                    window.location.href = '/tales/' + nextId + '?autoplay=1';
                 }
             }, 1000);
         });

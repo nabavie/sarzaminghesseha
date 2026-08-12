@@ -117,7 +117,9 @@ public class TaleController {
         model.addAttribute("avgRating", avgRating);
         model.addAttribute("ratingCount", ratingCount);
         model.addAttribute("comments", commentService.topLevelForTale(tale));
-        model.addAttribute("relatedTales", taleService.findRelated(tale, RELATED_COUNT));
+        List<Tale> relatedTales = taleService.findRelated(tale, RELATED_COUNT);
+        model.addAttribute("relatedTales", relatedTales);
+        model.addAttribute("nextTale", relatedTales.isEmpty() ? null : relatedTales.get(0));
         model.addAttribute("storytellerTaleCount",
                 taleService.countApprovedByStoryteller(tale.getStoryteller()));
         model.addAttribute("autoplay", autoplay != null && !autoplay.isBlank());

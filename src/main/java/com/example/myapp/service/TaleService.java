@@ -62,8 +62,43 @@ public class TaleService {
     }
 
     /**
-     * Tales to offer after this one: same categories first, then the newest published
-     * tales so the list is never empty on a thinly-categorised tale.
+     * Next tale to auto-play: walk the same-category playlist from newer to older.
+     * Always picking "the newest other tale" would ping-pong between the two newest.
+     * When this tale is already the oldest in its categories, wrap to the newest
+     * remaining one. If the category has no other tale, fall through to the whole
+     * catalogue with the same older-then-wrap rule.
+     */
+    public Optional<Tale> findNextToPlay(Tale tale) {
+        List<Long> categoryIds = tale.getCategories().stream().map(Category::getId).toList();
+        Pageable one = PageRequest.of(0, 1);
+
+        if (!categoryIds.isEmpty()) {
+            List<Tale> older = taleRepository.findNextOlderInCategories(
+                    TaleStatus.APPROVED, categoryIds, tale.getCreatedAt(), tale.getId(), one);
+            if (!older.isEmpty()) {
+                return Optional.of(older.get(0));
+            }
+            List<Tale> newest = taleRepository.findByCategoryIds(
+                    TaleStatus.APPROVED, categoryIds, tale.getId(), one);
+            if (!newest.isEmpty()) {
+                return Optional.of(newest.get(0));
+            }
+        }
+
+        List<Tale> olderAll = taleRepository.findNextOlderApproved(
+                TaleStatus.APPROVED, tale.getCreatedAt(), tale.getId(), one);
+        if (!olderAll.isEmpty()) {
+            return Optional.of(olderAll.get(0));
+        }
+        List<Tale> newestAll = taleRepository.findRecentApprovedExcluding(
+                TaleStatus.APPROVED, tale.getId(), one);
+        return newestAll.isEmpty() ? Optional.empty() : Optional.of(newestAll.get(0));
+    }
+
+    /**
+     * Tales to offer after this one: the playlist-next tale first, then other
+     * same-category tales, then the newest published tales so the list is never
+     * empty on a thinly-categorised tale.
      */
     public List<Tale> findRelated(Tale tale, int limit) {
         List<Long> categoryIds = tale.getCategories().stream().map(Category::getId).toList();
@@ -90,6 +125,14 @@ public class TaleService {
                 }
             }
         }
+
+        findNextToPlay(tale).ifPresent(next -> {
+            related.removeIf(t -> t.getId().equals(next.getId()));
+            related.add(0, next);
+            while (related.size() > limit) {
+                related.remove(related.size() - 1);
+            }
+        });
         return related;
     }
 

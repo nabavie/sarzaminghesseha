@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 
 @Repository
@@ -57,20 +58,49 @@ public interface TaleRepository extends JpaRepository<Tale, Long> {
             WHERE t.status = :status
               AND t.id <> :excludeId
               AND c.id IN :categoryIds
-            ORDER BY t.createdAt DESC
+            ORDER BY t.createdAt DESC, t.id DESC
             """)
     List<Tale> findByCategoryIds(@Param("status") TaleStatus status,
                                  @Param("categoryIds") List<Long> categoryIds,
                                  @Param("excludeId") Long excludeId,
                                  Pageable pageable);
 
+    /**
+     * Next older tale in the same categories (playlist walk). Same timestamp
+     * breaks ties by id so two tales never point at each other as "newest other".
+     */
+    @Query("""
+            SELECT DISTINCT t FROM Tale t
+            JOIN t.categories c
+            WHERE t.status = :status
+              AND c.id IN :categoryIds
+              AND (t.createdAt < :createdAt OR (t.createdAt = :createdAt AND t.id < :excludeId))
+            ORDER BY t.createdAt DESC, t.id DESC
+            """)
+    List<Tale> findNextOlderInCategories(@Param("status") TaleStatus status,
+                                         @Param("categoryIds") List<Long> categoryIds,
+                                         @Param("createdAt") Instant createdAt,
+                                         @Param("excludeId") Long excludeId,
+                                         Pageable pageable);
+
     @Query("""
             SELECT t FROM Tale t
             WHERE t.status = :status
               AND t.id <> :excludeId
-            ORDER BY t.createdAt DESC
+            ORDER BY t.createdAt DESC, t.id DESC
             """)
     List<Tale> findRecentApprovedExcluding(@Param("status") TaleStatus status,
                                            @Param("excludeId") Long excludeId,
                                            Pageable pageable);
+
+    @Query("""
+            SELECT t FROM Tale t
+            WHERE t.status = :status
+              AND (t.createdAt < :createdAt OR (t.createdAt = :createdAt AND t.id < :excludeId))
+            ORDER BY t.createdAt DESC, t.id DESC
+            """)
+    List<Tale> findNextOlderApproved(@Param("status") TaleStatus status,
+                                     @Param("createdAt") Instant createdAt,
+                                     @Param("excludeId") Long excludeId,
+                                     Pageable pageable);
 }
