@@ -4,6 +4,7 @@ import com.example.myapp.model.ListeningProgress;
 import com.example.myapp.model.Tale;
 import com.example.myapp.model.TaleStatus;
 import com.example.myapp.model.User;
+import com.example.myapp.seo.StructuredData;
 import com.example.myapp.service.CategoryService;
 import com.example.myapp.service.CommentService;
 import com.example.myapp.service.FavoriteService;
@@ -11,6 +12,8 @@ import com.example.myapp.service.ProgressService;
 import com.example.myapp.service.RatingService;
 import com.example.myapp.service.TaleService;
 import com.example.myapp.service.UserService;
+import com.example.myapp.util.SiteUrl;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Controller;
@@ -36,6 +39,7 @@ public class TaleController {
     private final FavoriteService favoriteService;
     private final CommentService commentService;
     private final ProgressService progressService;
+    private final SiteUrl siteUrl;
 
     public TaleController(TaleService taleService,
                           CategoryService categoryService,
@@ -43,7 +47,8 @@ public class TaleController {
                           RatingService ratingService,
                           FavoriteService favoriteService,
                           CommentService commentService,
-                          ProgressService progressService) {
+                          ProgressService progressService,
+                          SiteUrl siteUrl) {
         this.taleService = taleService;
         this.categoryService = categoryService;
         this.userService = userService;
@@ -51,6 +56,7 @@ public class TaleController {
         this.favoriteService = favoriteService;
         this.commentService = commentService;
         this.progressService = progressService;
+        this.siteUrl = siteUrl;
     }
 
     @GetMapping("/tales")
@@ -58,7 +64,8 @@ public class TaleController {
                        @RequestParam(required = false) Long category,
                        @RequestParam(required = false) Long storyteller,
                        @RequestParam(defaultValue = "0") int page,
-                       Model model) {
+                       Model model,
+                       HttpServletRequest request) {
         String query = q == null ? "" : q.trim();
         var talesPage = taleService.searchApproved(query, category, storyteller, Math.max(page, 0), PAGE_SIZE);
         model.addAttribute("talesPage", talesPage);
@@ -87,19 +94,25 @@ public class TaleController {
 
         model.addAttribute("pageDescription",
                 "جست‌وجوی قصه صوتی، قصه شب و داستان برای کودکان و نوجوانان در سرزمین قصه‌ها.");
+        // Filters/pagination share one canonical to avoid thin duplicate URLs
+        model.addAttribute("pageCanonical", siteUrl.base(request) + "/tales");
+        model.addAttribute("jsonLd", StructuredData.talesCollection(siteUrl.base(request)));
         return "tales/list";
     }
 
     @GetMapping("/tales/{id}")
-    public String detail(@PathVariable Long id, Model model, Authentication authentication) {
+    public String detail(@PathVariable Long id, Model model, Authentication authentication,
+                         HttpServletRequest request) {
         Tale tale = taleService.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
         if (tale.getStatus() != TaleStatus.APPROVED && !canPreview(tale, authentication)) {
             throw new ResponseStatusException(NOT_FOUND);
         }
+        double avgRating = ratingService.average(tale);
+        long ratingCount = ratingService.count(tale);
         model.addAttribute("tale", tale);
-        model.addAttribute("avgRating", ratingService.average(tale));
-        model.addAttribute("ratingCount", ratingService.count(tale));
+        model.addAttribute("avgRating", avgRating);
+        model.addAttribute("ratingCount", ratingCount);
         model.addAttribute("comments", commentService.topLevelForTale(tale));
 
         User user = authentication == null ? null
@@ -109,7 +122,7 @@ public class TaleController {
         model.addAttribute("resumeSeconds", user == null ? 0
                 : progressService.find(user, tale).map(ListeningProgress::getSeconds).orElse(0));
 
-        String desc = null;
+        String desc;
         if (tale.getSeoDescription() != null && !tale.getSeoDescription().isBlank()) {
             desc = tale.getSeoDescription().trim();
         } else {
@@ -127,6 +140,13 @@ public class TaleController {
         model.addAttribute("pageDescription", desc);
         model.addAttribute("pageImage", tale.getCoverPath() != null
                 ? "/media/covers/" + tale.getCoverPath() : "/img/logo.png");
+        model.addAttribute("pageCanonical", siteUrl.base(request) + "/tales/" + tale.getId());
+        if (tale.getStatus() != TaleStatus.APPROVED) {
+            model.addAttribute("pageRobots", "noindex, nofollow");
+        } else {
+            model.addAttribute("jsonLd",
+                    StructuredData.tale(siteUrl.base(request), tale, desc, avgRating, ratingCount));
+        }
         return "tales/detail";
     }
 

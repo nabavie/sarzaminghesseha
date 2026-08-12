@@ -18,10 +18,6 @@ public class GlobalModelAttributes {
             "سرزمین قصه‌ها — قصه صوتی، قصه شب، داستان کودکانه و نوجوانانه، و قصه گویی. "
                     + "قصه‌های صوتی برای کودکان، نوجوانان و همهٔ دوستداران قصه.";
 
-    public static final String DEFAULT_KEYWORDS =
-            "قصه, قصه گویی, قصه شب, داستان کودکانه, داستان نوجوانانه, قصه صوتی, داستان صوتی, "
-                    + "قصه شب کودکان, قصه شب نوجوانان, قصه های شب, قصه شب صوتی, قصه شب برای خواب";
-
     private final UserRepository userRepository;
     private final CommentService commentService;
     private final SiteUrl siteUrl;
@@ -58,9 +54,27 @@ public class GlobalModelAttributes {
         return DEFAULT_DESCRIPTION;
     }
 
-    @ModelAttribute("defaultKeywords")
-    public String defaultKeywords() {
-        return DEFAULT_KEYWORDS;
+    /**
+     * Default robots directive. Private / thin pages get noindex.
+     * Controllers may override with {@code pageRobots}.
+     */
+    @ModelAttribute("pageRobots")
+    public String pageRobots(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        if (path == null) {
+            return "index, follow";
+        }
+        if (path.startsWith("/admin")
+                || path.startsWith("/dashboard")
+                || path.startsWith("/storyteller")
+                || path.equals("/login")
+                || path.equals("/register")
+                || path.equals("/forgot-password")
+                || path.equals("/feedback")
+                || path.equals("/error")) {
+            return "noindex, nofollow";
+        }
+        return "index, follow";
     }
 
     /**

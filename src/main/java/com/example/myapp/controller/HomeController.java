@@ -2,10 +2,13 @@ package com.example.myapp.controller;
 
 import com.example.myapp.model.Tale;
 import com.example.myapp.model.TaleStatus;
+import com.example.myapp.seo.StructuredData;
 import com.example.myapp.service.CategoryService;
 import com.example.myapp.service.RatingService;
 import com.example.myapp.service.TaleService;
 import com.example.myapp.util.PersianDateUtil;
+import com.example.myapp.util.SiteUrl;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,19 +24,22 @@ public class HomeController {
     private final RatingService ratingService;
     private final CategoryService categoryService;
     private final PersianDateUtil persianDate;
+    private final SiteUrl siteUrl;
 
     public HomeController(TaleService taleService,
                           RatingService ratingService,
                           CategoryService categoryService,
-                          PersianDateUtil persianDate) {
+                          PersianDateUtil persianDate,
+                          SiteUrl siteUrl) {
         this.taleService = taleService;
         this.ratingService = ratingService;
         this.categoryService = categoryService;
         this.persianDate = persianDate;
+        this.siteUrl = siteUrl;
     }
 
     @GetMapping("/")
-    public String home(Model model) {
+    public String home(Model model, HttpServletRequest request) {
         List<Tale> latest = taleService
                 .findByStatus(TaleStatus.APPROVED, PageRequest.of(0, 8))
                 .getContent();
@@ -56,6 +62,8 @@ public class HomeController {
         model.addAttribute("pageDescription",
                 "سرزمین قصه‌ها — قصه صوتی، قصه شب، داستان کودکانه و نوجوانانه، و قصه گویی. "
                         + "قصه‌های صوتی برای کودکان، نوجوانان و همهٔ دوستداران قصه.");
+        model.addAttribute("pageCanonical", siteUrl.base(request) + "/");
+        model.addAttribute("jsonLd", StructuredData.website(siteUrl.base(request)));
         return "home/index";
     }
 }

@@ -91,6 +91,38 @@ main {
     padding: 1.5rem 1.75rem;
 }
 
+.site-page {
+    max-width: 46rem;
+}
+
+.site-page p,
+.site-page li {
+    line-height: 1.9;
+}
+
+.site-page-goals {
+    padding-inline-start: 1.25rem;
+    margin-bottom: 0;
+}
+
+.site-page-goals li + li {
+    margin-top: .55rem;
+}
+
+#faqAccordion .accordion-item {
+    border-color: rgba(59, 52, 134, .12);
+}
+
+#faqAccordion .accordion-button:not(.collapsed) {
+    background: #fff9ef;
+    color: inherit;
+    box-shadow: none;
+}
+
+#faqAccordion .accordion-button:focus {
+    box-shadow: 0 0 0 .2rem rgba(232, 168, 74, .25);
+}
+
 .storyteller-card {
     transition: transform .15s ease, box-shadow .15s ease;
 }

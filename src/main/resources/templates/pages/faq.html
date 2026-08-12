@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('سؤالات متداول')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <nav aria-label="مسیر صفحه" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a th:href="@{/}">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">سؤالات متداول</li>
+        </ol>
+    </nav>
+
+    <header class="mb-4 text-center site-page mx-auto">
+        <h1 class="h2 mb-3">سؤالات متداول</h1>
+        <p class="text-muted mb-0">
+            پاسخ کوتاه دربارهٔ سرزمین قصه‌ها، هدف سایت، شنیدن قصه و قصه‌گویی
+        </p>
+    </header>
+
+    <div class="site-page mx-auto">
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item" th:each="item, stat : ${faqs}">
+                <h2 class="accordion-header" th:id="'faq-h-' + ${stat.index}">
+                    <button class="accordion-button" th:classappend="${!stat.first} ? 'collapsed'"
+                            type="button" data-bs-toggle="collapse"
+                            th:data-bs-target="'#faq-c-' + ${stat.index}"
+                            th:aria-expanded="${stat.first}"
+                            th:aria-controls="'faq-c-' + ${stat.index}"
+                            th:text="${item.question()}">سؤال</button>
+                </h2>
+                <div th:id="'faq-c-' + ${stat.index}" class="accordion-collapse collapse"
+                     th:classappend="${stat.first} ? 'show'"
+                     th:aria-labelledby="'faq-h-' + ${stat.index}"
+                     data-bs-parent="#faqAccordion">
+                    <div class="accordion-body" th:text="${item.answer()}">پاسخ</div>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center text-muted mt-4 mb-0 small">
+            بیشتر بدانید:
+            <a th:href="@{/about}">درباره ما</a>
+            ·
+            <a th:href="@{/feedback}">نظر و پیشنهاد</a>
+        </p>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

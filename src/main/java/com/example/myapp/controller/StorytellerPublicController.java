@@ -2,8 +2,11 @@ package com.example.myapp.controller;
 
 import com.example.myapp.model.Role;
 import com.example.myapp.model.User;
+import com.example.myapp.seo.StructuredData;
 import com.example.myapp.service.TaleService;
 import com.example.myapp.service.UserService;
+import com.example.myapp.util.SiteUrl;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,26 +25,31 @@ public class StorytellerPublicController {
 
     private final UserService userService;
     private final TaleService taleService;
+    private final SiteUrl siteUrl;
 
-    public StorytellerPublicController(UserService userService, TaleService taleService) {
+    public StorytellerPublicController(UserService userService, TaleService taleService, SiteUrl siteUrl) {
         this.userService = userService;
         this.taleService = taleService;
+        this.siteUrl = siteUrl;
     }
 
     @GetMapping("/{id}")
     public String profile(@PathVariable Long id,
                           @RequestParam(defaultValue = "0") int page,
-                          Model model) {
+                          Model model,
+                          HttpServletRequest request) {
         User storyteller = userService.findById(id)
                 .filter(u -> u.hasRole(Role.STORYTELLER))
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
 
         var talesPage = taleService.findApprovedByStoryteller(storyteller, Math.max(page, 0), PAGE_SIZE);
         int lastPage = Math.max(talesPage.getTotalPages() - 1, 0);
+        long taleCount = taleService.countApprovedByStoryteller(storyteller);
+        String base = siteUrl.base(request);
 
         model.addAttribute("storyteller", storyteller);
         model.addAttribute("talesPage", talesPage);
-        model.addAttribute("taleCount", taleService.countApprovedByStoryteller(storyteller));
+        model.addAttribute("taleCount", taleCount);
         model.addAttribute("pageWindowStart", Math.max(0, talesPage.getNumber() - 2));
         model.addAttribute("pageWindowEnd", Math.min(lastPage, talesPage.getNumber() + 2));
         model.addAttribute("pageDescription",
@@ -49,6 +57,9 @@ public class StorytellerPublicController {
         if (storyteller.getAvatarPath() != null && !storyteller.getAvatarPath().isBlank()) {
             model.addAttribute("pageImage", "/media/avatars/" + storyteller.getAvatarPath());
         }
+        // Pagination: always canonicalize to page 1 profile URL
+        model.addAttribute("pageCanonical", base + "/storytellers/" + storyteller.getId());
+        model.addAttribute("jsonLd", StructuredData.storyteller(base, storyteller, taleCount));
         return "storytellers/profile";
     }
 }

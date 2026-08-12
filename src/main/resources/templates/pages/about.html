@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('درباره ما')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <nav aria-label="مسیر صفحه" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a th:href="@{/}">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page">درباره ما</li>
+        </ol>
+    </nav>
+
+    <article class="site-page mx-auto">
+        <header class="mb-4 text-center">
+            <h1 class="h2 mb-3">دربارهٔ سرزمین قصه‌ها</h1>
+            <p class="lead text-muted mb-0">
+                خانه‌ای برای قصه صوتی، قصه شب و قصه‌گویی فارسی
+            </p>
+        </header>
+
+        <section class="mb-5">
+            <h2 class="h4 mb-3">این وب‌سایت چیست؟</h2>
+            <p>
+                «سرزمین قصه‌ها» یک پلتفرم فارسی برای شنیدن و اشتراک‌گذاری <strong>قصه صوتی</strong> است.
+                اینجا قصه‌گویان داستان‌های کودکانه، نوجوانانه، محلی و سنتی را با صدای خود ضبط می‌کنند
+                تا خانواده‌ها بتوانند در خانه، قبل از خواب، یا در سفر، قصه‌ای آرام و دلنشین گوش بدهند.
+            </p>
+            <p class="mb-0">
+                ما می‌خواهیم قصه‌گویی را از یک خاطرهٔ گذرا به یک آرشیو زنده تبدیل کنیم؛
+                جایی که هر قصه با نام قصه‌گو، دسته‌بندی و امتیاز شنوندگان در دسترس بماند.
+            </p>
+        </section>
+
+        <section class="mb-5">
+            <h2 class="h4 mb-3">هدف‌های ما</h2>
+            <ul class="site-page-goals">
+                <li>زنده نگه داشتن فرهنگ قصه‌گویی و پیوند با قصه‌های کهن ایران</li>
+                <li>ساخت آرشیوی امن و باکیفیت از قصه‌های شب و داستان‌های صوتی برای کودکان و نوجوانان</li>
+                <li>ایجاد فضایی دوستانه برای شنوندگان و قصه‌گویان تا همدیگر را پیدا کنند</li>
+                <li>تشویق قصه‌گویان با دیده شدن، امتیاز و بازخورد واقعی شنوندگان</li>
+            </ul>
+        </section>
+
+        <section class="mb-5">
+            <h2 class="h4 mb-3">برای چه کسانی است؟</h2>
+            <p class="mb-0">
+                برای کودکان و نوجوانان، والدین، معلمان، و همهٔ کسانی که عاشق شنیدن یا گفتن قصه هستند.
+                اگر دوست دارید شنونده باشید، کافی است قصه را باز کنید و پخش کنید.
+                اگر قصه‌گو هستید، می‌توانید صدای خود را ضبط و پس از تأیید مدیر منتشر کنید.
+            </p>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h4 mb-3">چطور شروع کنیم؟</h2>
+            <p>
+                از <a th:href="@{/tales}">همهٔ قصه‌ها</a> شروع کنید، یا اگر سؤالی دارید
+                صفحهٔ <a th:href="@{/faq}">سؤالات متداول</a> را بخوانید.
+                برای پیام مستقیم هم می‌توانید از
+                <a th:href="@{/feedback}">نظر و پیشنهاد</a> استفاده کنید.
+            </p>
+        </section>
+    </article>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

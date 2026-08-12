@@ -5,11 +5,18 @@
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
 <main class="container py-5">
+    <nav aria-label="مسیر صفحه" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a th:href="@{/}">خانه</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${storyteller.displayName}">قصه‌گو</li>
+        </ol>
+    </nav>
+
     <section class="storyteller-hero card p-4 p-md-5 mb-5">
         <div class="d-flex flex-wrap align-items-center gap-4">
             <img th:if="${storyteller.avatarPath != null and !#strings.isEmpty(storyteller.avatarPath)}"
                  th:src="@{'/media/avatars/' + ${storyteller.avatarPath}}"
-                 class="storyteller-avatar-lg" th:alt="'تصویر ' + ${storyteller.displayName}">
+                 class="storyteller-avatar-lg" th:alt="'تصویر قصه‌گو ' + ${storyteller.displayName}">
             <div th:unless="${storyteller.avatarPath != null and !#strings.isEmpty(storyteller.avatarPath)}"
                  class="storyteller-avatar-lg-placeholder" aria-hidden="true">🎙️</div>
             <div class="flex-grow-1">
@@ -34,7 +41,7 @@
             <a th:href="@{'/tales/' + ${tale.id}}" class="text-decoration-none text-reset">
                 <div class="card tale-card">
                     <img th:if="${tale.coverPath != null}" th:src="@{'/media/covers/' + ${tale.coverPath}}"
-                         class="tale-cover" alt="تصویر قصه" loading="lazy" decoding="async">
+                         class="tale-cover" th:alt="'جلد قصه «' + ${tale.title} + '»'" loading="lazy" decoding="async">
                     <div th:if="${tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
                     <div class="card-body">
                         <h3 class="h6 card-title fw-bold" th:text="${tale.title}">عنوان</h3>
