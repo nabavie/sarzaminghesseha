@@ -62,7 +62,9 @@ com\example\myapp\controller\CommentController.class
 com\example\myapp\config\LoginFailureHandler.class
 com\example\myapp\controller\AuthController.class
 com\example\myapp\controller\api\StorytellerUploadApiController.class
+com\example\myapp\controller\api\TalePlayApiController.class
 com\example\myapp\controller\FavoriteController.class
+com\example\myapp\controller\api\TalePlayApiController$PlayResponse.class
 com\example\myapp\controller\MediaController.class
 com\example\myapp\service\StorytellerRequestService.class
 com\example\myapp\service\MediaTokenService.class

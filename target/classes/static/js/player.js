@@ -1,6 +1,8 @@
 // Audio player enhancements for the tale detail page:
 // resumes from the saved position, gently nudges guests to sign up after
-// two distinct free listens, and reports progress for logged-in users.
+// two distinct free listens, reports progress for logged-in users, and
+// continues to the next tale on the same <audio> element so a background
+// tab can keep playing (full page navigation would be blocked by autoplay).
 (function () {
     'use strict';
 
@@ -16,16 +18,20 @@
     var AUTO_NEXT_SECONDS = 5;
     var AUTO_NEXT_KEY = 'sq_auto_next';
     var PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    var lastSent = -1;
+    var lastTick = 0;
+    var advancing = false;
 
     function faDigits(value) {
         return String(value).replace(/[0-9]/g, function (d) { return PERSIAN_DIGITS[+d]; });
     }
 
     if (resume > 0) {
-        player.addEventListener('loadedmetadata', function () {
+        player.addEventListener('loadedmetadata', function onResume() {
             if (isFinite(player.duration) && resume < player.duration - 5) {
                 player.currentTime = resume;
             }
+            player.removeEventListener('loadedmetadata', onResume);
         });
     }
 
@@ -113,13 +119,12 @@
     }
 
     setUpAutoNext();
+    setUpProgress();
 
     /**
-     * When a tale finishes, offer the playlist-next tale after a short countdown.
-     * That id comes from the server (next older in the same category) so the two
-     * newest tales cannot ping-pong. Guests are left out on purpose: they have a
-     * two-tale free limit, and hopping them onto a third tale would just hit the
-     * signup modal.
+     * When a tale finishes, continue on the same audio element. Navigating to a
+     * new page would lose the user-gesture and fail in a minimized tab.
+     * Guests are left out on purpose: they have a two-tale free limit.
      */
     function setUpAutoNext() {
         if (!authenticated) return;
@@ -147,6 +152,106 @@
             }
         }
 
+        function applyTale(data) {
+            taleId = data.id;
+            lastSent = -1;
+            lastTick = 0;
+            player.dataset.taleId = String(data.id);
+            player.src = data.audioUrl;
+            nextId = data.nextId ? String(data.nextId) : '';
+            nextTitle = data.nextTitle || '';
+            if (section) {
+                if (nextId) {
+                    section.setAttribute('data-next-id', nextId);
+                    section.setAttribute('data-next-title', nextTitle);
+                } else {
+                    section.removeAttribute('data-next-id');
+                    section.removeAttribute('data-next-title');
+                }
+            }
+            document.title = data.title + ' | سرزمین قصه‌ها';
+            var heading = document.getElementById('taleTitle');
+            if (heading) heading.textContent = data.title;
+            var crumb = document.getElementById('taleBreadcrumb');
+            if (crumb) crumb.textContent = data.title;
+            var share = document.getElementById('shareTale');
+            if (share) {
+                share.setAttribute('data-share-title', data.title);
+                share.setAttribute('data-share-url', window.location.origin + '/tales/' + data.id);
+            }
+            var cover = document.getElementById('taleCover');
+            if (cover && data.coverUrl) {
+                cover.src = data.coverUrl;
+                cover.alt = 'جلد قصه «' + data.title + '»';
+            }
+            if (window.history && history.pushState) {
+                history.pushState({ taleId: data.id }, data.title, '/tales/' + data.id);
+            }
+            if (navigator.mediaSession && window.MediaMetadata) {
+                var meta = { title: data.title, artist: 'سرزمین قصه‌ها' };
+                if (data.coverUrl) {
+                    meta.artwork = [{ src: data.coverUrl }];
+                }
+                navigator.mediaSession.metadata = new MediaMetadata(meta);
+            }
+            var blocked = document.getElementById('autoplayBlocked');
+            if (blocked) blocked.classList.add('d-none');
+        }
+
+        function goNext() {
+            cancel();
+            if (advancing || !nextId) return;
+            advancing = true;
+            var targetId = nextId;
+            fetch('/api/tales/' + targetId + '/play')
+                .then(function (response) {
+                    if (!response.ok) throw new Error('play');
+                    return response.json();
+                })
+                .then(function (data) {
+                    applyTale(data);
+                    var playPromise = player.play();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(function () {
+                            var blocked = document.getElementById('autoplayBlocked');
+                            if (blocked) blocked.classList.remove('d-none');
+                        });
+                    }
+                })
+                .catch(function () {
+                    window.location.href = '/tales/' + targetId;
+                })
+                .then(function () {
+                    advancing = false;
+                });
+        }
+
+        function startCountdown() {
+            if (toggle && !toggle.checked) return;
+            if (!nextId || advancing) return;
+            cancel();
+            // Minimized / background tabs cannot show the cancel banner, and
+            // browsers throttle timers there — continue immediately.
+            if (document.hidden) {
+                goNext();
+                return;
+            }
+            var remaining = AUTO_NEXT_SECONDS;
+            if (titleEl) titleEl.textContent = nextTitle || '';
+            if (countEl) countEl.textContent = faDigits(remaining);
+            if (banner) {
+                banner.classList.remove('d-none');
+                banner.classList.add('d-flex');
+            }
+            countdown = setInterval(function () {
+                remaining -= 1;
+                if (countEl) countEl.textContent = faDigits(Math.max(remaining, 0));
+                if (remaining <= 0) {
+                    goNext();
+                }
+            }, 1000);
+        }
+
         if (toggle) {
             try {
                 if (localStorage.getItem(AUTO_NEXT_KEY) === 'off') toggle.checked = false;
@@ -160,67 +265,68 @@
         }
         if (cancelBtn) cancelBtn.addEventListener('click', cancel);
         // replaying the finished tale means the listener is not done with it yet
-        player.addEventListener('play', cancel);
-
-        player.addEventListener('ended', function () {
-            if (toggle && !toggle.checked) return;
-            cancel();
-
-            var remaining = AUTO_NEXT_SECONDS;
-            if (titleEl) titleEl.textContent = nextTitle || '';
-            if (countEl) countEl.textContent = faDigits(remaining);
-            if (banner) {
-                banner.classList.remove('d-none');
-                banner.classList.add('d-flex');
-            }
-            countdown = setInterval(function () {
-                remaining -= 1;
-                if (countEl) countEl.textContent = faDigits(Math.max(remaining, 0));
-                if (remaining <= 0) {
-                    clearInterval(countdown);
-                    countdown = null;
-                    window.location.href = '/tales/' + nextId + '?autoplay=1';
-                }
-            }, 1000);
+        player.addEventListener('play', function () {
+            if (!advancing) cancel();
         });
-    }
 
-    if (!authenticated || !taleId) return;
+        player.addEventListener('ended', startCountdown);
 
-    var csrfMeta = document.querySelector('meta[name="_csrf"]');
-    var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
-    var lastSent = -1;
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden && countdown) {
+                goNext();
+            }
+        });
 
-    function send(finished) {
-        var seconds = Math.floor(player.currentTime || 0);
-        if (!finished && seconds === lastSent) return;
-        lastSent = seconds;
+        window.addEventListener('popstate', function () {
+            window.location.reload();
+        });
 
-        var headers = { 'Content-Type': 'application/json' };
-        if (csrfMeta && csrfHeaderMeta) {
-            headers[csrfHeaderMeta.content] = csrfMeta.content;
+        if (navigator.mediaSession) {
+            try {
+                navigator.mediaSession.setActionHandler('nexttrack', goNext);
+            } catch (e) { /* handler not supported */ }
         }
-        var duration = isFinite(player.duration) ? Math.floor(player.duration) : null;
-        fetch('/api/progress', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-                taleId: taleId,
-                seconds: finished ? 0 : seconds,
-                duration: duration,
-                finished: !!finished
-            })
-        }).catch(function () { /* progress is best-effort */ });
     }
 
-    var lastTick = 0;
-    player.addEventListener('timeupdate', function () {
-        var now = Date.now();
-        if (now - lastTick >= 10000) { // every 10 seconds while playing
-            lastTick = now;
+    function setUpProgress() {
+        if (!authenticated || !taleId) return;
+
+        var csrfMeta = document.querySelector('meta[name="_csrf"]');
+        var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+
+        function send(finished) {
+            var seconds = Math.floor(player.currentTime || 0);
+            if (!finished && seconds === lastSent) return;
+            lastSent = seconds;
+
+            var headers = { 'Content-Type': 'application/json' };
+            if (csrfMeta && csrfHeaderMeta) {
+                headers[csrfHeaderMeta.content] = csrfMeta.content;
+            }
+            var duration = isFinite(player.duration) ? Math.floor(player.duration) : null;
+            fetch('/api/progress', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    taleId: taleId,
+                    seconds: finished ? 0 : seconds,
+                    duration: duration,
+                    finished: !!finished
+                })
+            }).catch(function () { /* progress is best-effort */ });
+        }
+
+        player.addEventListener('timeupdate', function () {
+            var now = Date.now();
+            if (now - lastTick >= 10000) {
+                lastTick = now;
+                send(false);
+            }
+        });
+        player.addEventListener('pause', function () {
+            if (advancing) return;
             send(false);
-        }
-    });
-    player.addEventListener('pause', function () { send(false); });
-    player.addEventListener('ended', function () { send(true); });
+        });
+        player.addEventListener('ended', function () { send(true); });
+    }
 })();

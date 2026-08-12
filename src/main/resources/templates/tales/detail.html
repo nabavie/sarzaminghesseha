@@ -12,7 +12,8 @@
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a th:href="@{/}">خانه</a></li>
             <li class="breadcrumb-item"><a th:href="@{/tales}">قصه‌ها</a></li>
-            <li class="breadcrumb-item active" aria-current="page" th:text="${tale.title}">عنوان</li>
+            <li class="breadcrumb-item active" aria-current="page" id="taleBreadcrumb"
+                th:text="${tale.title}">عنوان</li>
         </ol>
     </nav>
 
@@ -27,10 +28,11 @@
                 <div class="row g-4 align-items-start">
                     <div class="col-md-4" th:if="${tale.coverPath != null}">
                         <img th:src="@{'/media/covers/' + ${tale.coverPath}}" class="rounded-4 w-100"
+                             id="taleCover"
                              th:alt="'جلد قصه «' + ${tale.title} + '»'">
                     </div>
                     <div th:class="${tale.coverPath != null ? 'col-md-8' : 'col-12'}">
-                        <h1 class="h2 mb-3" th:text="${tale.title}">عنوان قصه</h1>
+                        <h1 class="h2 mb-3" id="taleTitle" th:text="${tale.title}">عنوان قصه</h1>
 
                         <div class="mb-3">
                             <a th:each="cat : ${tale.categories}" th:href="@{/tales(category=${cat.id})}"

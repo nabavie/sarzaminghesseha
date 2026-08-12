@@ -6,8 +6,6 @@
     var button = document.getElementById('shareTale');
     if (!button) return;
 
-    var url = button.getAttribute('data-share-url') || window.location.href;
-    var title = button.getAttribute('data-share-title') || document.title;
     var originalText = button.textContent;
 
     function confirmCopied() {
@@ -17,7 +15,7 @@
         }, 2500);
     }
 
-    function copyFallback() {
+    function copyFallback(url) {
         var field = document.createElement('input');
         field.value = url;
         field.setAttribute('readonly', 'readonly');
@@ -35,14 +33,16 @@
     }
 
     button.addEventListener('click', function () {
+        var url = button.getAttribute('data-share-url') || window.location.href;
+        var title = button.getAttribute('data-share-title') || document.title;
         if (navigator.share) {
             navigator.share({ title: title, url: url }).catch(function () { /* dismissed */ });
             return;
         }
         if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(confirmCopied).catch(copyFallback);
+            navigator.clipboard.writeText(url).then(confirmCopied).catch(function () { copyFallback(url); });
             return;
         }
-        copyFallback();
+        copyFallback(url);
     });
 })();
