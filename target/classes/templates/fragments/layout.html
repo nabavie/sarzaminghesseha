@@ -13,8 +13,9 @@
     <meta name="robots" th:content="${pageRobots != null ? pageRobots : 'index, follow'}">
     <link rel="canonical"
           th:href="${pageCanonical != null ? pageCanonical : canonicalUrl}">
-    <link rel="icon" type="image/png" th:href="@{/img/logo-nav.png}">
-    <link rel="apple-touch-icon" th:href="@{/img/logo-nav.png}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32.png}">
+    <link rel="icon" type="image/png" sizes="180x180" th:href="@{/img/favicon-180.png}">
+    <link rel="apple-touch-icon" th:href="@{/img/favicon-180.png}">
     <meta property="og:type" th:content="${pageOgType != null ? pageOgType : 'website'}">
     <meta property="og:site_name" content="سرزمین قصه‌ها">
     <meta property="og:locale" content="fa_IR">
@@ -105,7 +106,10 @@
     </div>
 </nav>
 
-<footer th:fragment="footer" class="app-footer">
+<!-- th:remove="tag" drops this wrapper, so pages keep replacing their <footer> with the
+     footer element itself and simply gain the mobile bar as a sibling -->
+<div th:fragment="footer" th:remove="tag">
+<footer class="app-footer">
     <div class="container text-center py-4">
         <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
             <picture>
@@ -125,6 +129,44 @@
         <p class="mb-0 small opacity-75">قصه گویی · قصه شب صوتی · داستان صوتی</p>
     </div>
 </footer>
+
+<nav class="bottom-nav d-lg-none" aria-label="منوی پایین">
+    <a th:href="@{/}" th:classappend="${currentPath == '/'} ? 'active'">
+        <span class="bottom-nav-icon" aria-hidden="true">🏠</span>
+        <span>خانه</span>
+    </a>
+    <a th:href="@{/tales}"
+       th:classappend="${#strings.startsWith(currentPath, '/tales')} ? 'active'">
+        <span class="bottom-nav-icon" aria-hidden="true">📚</span>
+        <span>قصه‌ها</span>
+    </a>
+    <a sec:authorize="hasRole('STORYTELLER')" th:href="@{/storyteller/tales}"
+       th:classappend="${#strings.startsWith(currentPath, '/storyteller/')} ? 'active'">
+        <span class="bottom-nav-icon" aria-hidden="true">🎙️</span>
+        <span>قصه‌گویی</span>
+    </a>
+    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}"
+       th:classappend="${#strings.startsWith(currentPath, '/admin')} ? 'active'">
+        <span class="bottom-nav-icon" aria-hidden="true">🛠️</span>
+        <span>مدیریت</span>
+    </a>
+    <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}"
+       th:classappend="${#strings.startsWith(currentPath, '/dashboard')} ? 'active'">
+        <span class="bottom-nav-icon" aria-hidden="true">❤️</span>
+        <span>قصه‌های من</span>
+    </a>
+    <a sec:authorize="!isAuthenticated()" th:href="@{/faq}"
+       th:classappend="${currentPath == '/faq'} ? 'active'">
+        <span class="bottom-nav-icon" aria-hidden="true">❓</span>
+        <span>سؤال‌ها</span>
+    </a>
+    <a sec:authorize="!isAuthenticated()" th:href="@{/login}"
+       th:classappend="${currentPath == '/login'} ? 'active'">
+        <span class="bottom-nav-icon" aria-hidden="true">👤</span>
+        <span>ورود</span>
+    </a>
+</nav>
+</div>
 
 <div th:fragment="scripts">
     <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>

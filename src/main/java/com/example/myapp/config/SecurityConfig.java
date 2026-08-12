@@ -67,7 +67,11 @@ public class SecurityConfig {
                         .requestMatchers("/", "/register", "/register/recovery-code", "/login",
                                 "/forgot-password", "/feedback", "/about", "/faq", "/error",
                                 "/css/**", "/js/**", "/img/**", "/vendor/**", "/fonts/**", "/media/**",
-                                "/robots.txt", "/sitemap.xml").permitAll()
+                                "/robots.txt", "/sitemap.xml", "/favicon.ico").permitAll()
+                        // Probes such as Chrome DevTools' /.well-known/appspecific/... would
+                        // otherwise be treated as a protected page, get stored as the saved
+                        // request, and hijack the redirect after a successful login.
+                        .requestMatchers("/.well-known/**").permitAll()
                         // Public browsing and listening; the audio endpoint itself blocks
                         // non-approved tales for anyone but the owner or an admin.
                         .requestMatchers(HttpMethod.GET, "/tales", "/tales/*", "/tales/*/audio",

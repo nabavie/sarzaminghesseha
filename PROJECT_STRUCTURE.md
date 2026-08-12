@@ -457,8 +457,10 @@ Jalali calendar + Persian digit formatting, used directly from templates as
 | `spring.datasource.*` | MySQL at `localhost:3306/myapp_db`, `createDatabaseIfNotExist=true`, and crucially `characterEncoding=UTF-8&connectionCollation=utf8mb4_persian_ci` for Persian text. ⚠️ Contains a plaintext local root password — local-only config; don't commit real credentials or reuse elsewhere. |
 | `spring.jpa.hibernate.ddl-auto=update` | Schema is evolved by Hibernate; there are **no migration scripts**. |
 | `spring.thymeleaf.cache=false` | Template hot reload in dev. |
-| `spring.servlet.multipart.max-file-size=100MB` (request 120MB) | Voice tales can be long recordings. |
+| `spring.servlet.multipart.max-file-size=12MB` (request 15MB) | Hard container ceiling; deliberately above the app limits below so `FileStorageService` can reject with a message naming the real limit. |
+| `server.tomcat.max-swallow-size=-1` | Swallow oversized request bodies instead of resetting the connection, so the error redirect reaches the browser. |
 | `app.upload.dir=uploads` | Upload root (see `FileStorageProperties`). |
+| `app.upload.max-audio-size=10MB`, `app.upload.max-image-size=3MB` | Per-type limits enforced in `FileStorageService`, surfaced in Persian on the form and pre-checked in the browser by `file-size-check.js`. |
 | `app.seed.*` | Seed admin usernames/passwords (dev defaults — change in production). |
 | `app.media.token-secret=` | Audio-token HMAC secret; blank → random per boot. Set a fixed value if tokens must survive restarts. |
 

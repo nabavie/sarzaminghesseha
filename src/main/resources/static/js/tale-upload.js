@@ -52,6 +52,32 @@
         uploadError.textContent = '';
     }
 
+    const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
+    function megabytes(bytes) {
+        let text = (bytes / (1024 * 1024)).toFixed(1);
+        if (text.endsWith('.0')) {
+            text = text.slice(0, -2);
+        }
+        return text.replace(/[0-9]/g, function (d) {
+            return PERSIAN_DIGITS[Number(d)];
+        });
+    }
+
+    /**
+     * Recorded audio is injected straight into the input without a change event,
+     * so the shared file-size guard never sees it; check again right before sending.
+     */
+    function tooLargeMessage(file) {
+        const max = audioInput ? Number(audioInput.getAttribute('data-max-bytes')) : 0;
+        if (!max || file.size <= max) {
+            return null;
+        }
+        return 'حجم فایل صوتی شما ' + megabytes(file.size) + ' مگابایت است؛ حداکثر مجاز '
+            + (audioInput.getAttribute('data-max-label') || megabytes(max))
+            + ' مگابایت است. لطفاً قصه را کوتاه‌تر ضبط کنید یا فایل سبک‌تری بفرستید.';
+    }
+
     function uploadFile(file) {
         return new Promise(function (resolve, reject) {
             const xhr = new XMLHttpRequest();
@@ -119,6 +145,14 @@
 
         // Edit without changing audio, or already uploaded this session
         if (!file) {
+            return;
+        }
+
+        const tooLarge = tooLargeMessage(file);
+        if (tooLarge) {
+            e.preventDefault();
+            showError(tooLarge);
+            hideProgress();
             return;
         }
 

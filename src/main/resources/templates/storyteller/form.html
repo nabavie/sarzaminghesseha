@@ -23,6 +23,8 @@
                         <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">خطا</div>
                     </div>
 
+                    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}">خطا</div>
+
                     <div class="alert alert-danger d-none" id="uploadError" role="alert"></div>
 
                     <div class="mb-4 d-none" id="uploadProgressWrap">
@@ -96,8 +98,12 @@
                             <div class="tab-pane fade show active" id="uploadPane" role="tabpanel">
                                 <label for="audio" class="form-label">فایل صدای قصه را انتخاب کنید (mp3 و مانند آن):</label>
                                 <input type="file" class="form-control form-control-lg" id="audio"
-                                       th:field="*{audio}" accept="audio/*">
-                                <div class="form-text">روی اینترنت کند، صدا جداگانه با نوار پیشرفت آپلود می‌شود.</div>
+                                       th:field="*{audio}" accept="audio/*" data-kind="audio"
+                                       th:attr="data-max-bytes=${maxAudioBytes},data-max-label=${maxAudioLabel}">
+                                <div class="form-text">
+                                    روی اینترنت کند، صدا جداگانه با نوار پیشرفت آپلود می‌شود.
+                                    حداکثر حجم فایل صوتی <span th:text="${maxAudioLabel}">۱۰</span> مگابایت است.
+                                </div>
                             </div>
                             <div class="tab-pane fade text-center" id="recordPane" role="tabpanel">
                                 <p class="mb-3">دکمهٔ قرمز را بزنید و قصه را بگویید؛ وقتی تمام شد دوباره همان دکمه را بزنید.</p>
@@ -117,8 +123,12 @@
                     <div class="mb-4">
                         <label for="cover" class="form-label fw-bold fs-5">۵. عکس قصه (دلخواه)</label>
                         <input type="file" class="form-control form-control-lg" id="cover"
-                               th:field="*{cover}" accept="image/*">
-                        <div class="form-text">اگر عکسی ندارید اشکالی ندارد؛ خودمان یک تصویر قشنگ نشان می‌دهیم.</div>
+                               th:field="*{cover}" accept="image/*" data-kind="image"
+                               th:attr="data-max-bytes=${maxImageBytes},data-max-label=${maxImageLabel}">
+                        <div class="form-text">
+                            اگر عکسی ندارید اشکالی ندارد؛ خودمان یک تصویر قشنگ نشان می‌دهیم.
+                            حداکثر حجم عکس <span th:text="${maxImageLabel}">۳</span> مگابایت است.
+                        </div>
                     </div>
 
                     <div class="d-flex gap-2">
@@ -134,6 +144,7 @@
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
+<script th:src="@{/js/file-size-check.js}"></script>
 <script th:src="@{/js/recorder.js}"></script>
 <script th:src="@{/js/tale-upload.js}"></script>
 </body>

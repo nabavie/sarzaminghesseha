@@ -34,7 +34,8 @@
                         <div class="d-flex align-items-center gap-3">
                             <img th:if="${p.tale.coverPath != null}"
                                  th:src="@{'/media/covers/' + ${p.tale.coverPath}}"
-                                 class="rounded-3" style="width:64px;height:64px;object-fit:cover;" alt="">
+                                 class="rounded-3" style="width:64px;height:64px;object-fit:cover;" alt=""
+                                 loading="lazy" decoding="async">
                             <div th:if="${p.tale.coverPath == null}"
                                  class="rounded-3 tale-cover-placeholder" style="width:64px;height:64px;font-size:1.6rem;">📖</div>
                             <div class="flex-grow-1">
@@ -67,7 +68,7 @@
                 <a th:href="@{'/tales/' + ${fav.tale.id}}" class="text-decoration-none text-reset">
                     <div class="card tale-card">
                         <img th:if="${fav.tale.coverPath != null}" th:src="@{'/media/covers/' + ${fav.tale.coverPath}}"
-                             class="tale-cover" alt="">
+                             class="tale-cover" alt="" loading="lazy" decoding="async">
                         <div th:if="${fav.tale.coverPath == null}" class="tale-cover-placeholder">📖</div>
                         <div class="card-body">
                             <h3 class="h6 card-title fw-bold" th:text="${fav.tale.title}">عنوان</h3>
@@ -112,13 +113,43 @@
     </section>
 
     <section th:if="${isStoryteller}">
-        <div class="card p-4 d-flex flex-row flex-wrap justify-content-between align-items-center gap-3">
+        <div class="card p-4 d-flex flex-row flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <div>
                 <h2 class="h5 mb-1">🎙️ شما قصه‌گوی سرزمین قصه‌ها هستید!</h2>
                 <p class="text-muted mb-0">قصه‌های تازه بگو و قصه‌های قبلی‌ات را مدیریت کن.</p>
             </div>
-            <a th:href="@{/storyteller/tales}" class="btn btn-primary">رفتن به بخش قصه‌گویی</a>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/storyteller/comments}" class="btn btn-outline-primary position-relative">
+                    نظرهای شنوندگان
+                    <span class="nav-badge static" th:if="${unseenOnDashboard != null && unseenOnDashboard > 0}"
+                          th:text="${@persianDate.digits(unseenOnDashboard)}">۰</span>
+                </a>
+                <a th:href="@{/storyteller/tales}" class="btn btn-primary">رفتن به بخش قصه‌گویی</a>
+            </div>
         </div>
+
+        <section class="mb-5" th:if="${storytellerComments != null && !#lists.isEmpty(storytellerComments)}">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">💬 تازه‌ترین نظرها روی قصه‌های شما</h2>
+                <a th:href="@{/storyteller/comments}" class="btn btn-sm btn-outline-secondary">همهٔ نظرها</a>
+            </div>
+            <div class="vstack gap-2">
+                <div class="card p-3" th:each="c : ${storytellerComments}"
+                     th:classappend="${!c.seenByStoryteller} ? 'comment-notify-unread'">
+                    <div class="d-flex flex-wrap justify-content-between gap-2">
+                        <div>
+                            <span class="badge text-bg-warning me-1" th:if="${!c.seenByStoryteller}">جدید</span>
+                            <a th:href="@{'/tales/' + ${c.tale.id}}" class="fw-bold text-decoration-none"
+                               th:text="${c.tale.title}">قصه</a>
+                            <span class="text-muted"> — </span>
+                            <span th:text="${c.author.displayName}">نویسنده</span>
+                        </div>
+                        <span class="small text-muted" th:text="${@persianDate.format(c.createdAt)}">تاریخ</span>
+                    </div>
+                    <p class="mb-0 mt-2 small text-truncate" th:text="${c.content}">متن</p>
+                </div>
+            </div>
+        </section>
     </section>
 </main>
 

@@ -29,6 +29,7 @@ com\example\myapp\repository\StorytellerRequestRepository.class
 com\example\myapp\config\SecurityConfig.class
 com\example\myapp\controller\StorytellerController.class
 com\example\myapp\model\SiteFeedback.class
+com\example\myapp\config\UploadErrorAdvice.class
 com\example\myapp\repository\ListeningProgressRepository.class
 com\example\myapp\service\CommentService.class
 com\example\myapp\model\TaleStatus.class

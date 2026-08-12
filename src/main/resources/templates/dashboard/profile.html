@@ -35,8 +35,12 @@
                     <div class="mb-4">
                         <label for="avatar" class="form-label fw-bold">تصویر پروفایل</label>
                         <input type="file" class="form-control form-control-lg" id="avatar" name="avatar"
-                               accept="image/*">
-                        <div class="form-text">عکس jpg، png یا webp انتخاب کن.</div>
+                               accept="image/*" data-kind="image"
+                               th:attr="data-max-bytes=${maxImageBytes},data-max-label=${maxImageLabel}">
+                        <div class="form-text">
+                            عکس jpg، png یا webp انتخاب کن؛ حداکثر
+                            <span th:text="${maxImageLabel}">۳</span> مگابایت.
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-big w-100">ذخیرهٔ پروفایل</button>
                 </form>
@@ -104,5 +108,6 @@
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
 <script th:src="@{/js/password-rules.js}"></script>
+<script th:src="@{/js/file-size-check.js}"></script>
 </body>
 </html>

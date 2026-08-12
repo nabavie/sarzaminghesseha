@@ -1,5 +1,6 @@
 package com.example.myapp.service;
 
+import com.example.myapp.model.Category;
 import com.example.myapp.model.Tale;
 import com.example.myapp.model.TaleStatus;
 import com.example.myapp.model.User;
@@ -12,8 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class TaleService {
@@ -57,6 +61,38 @@ public class TaleService {
         return taleRepository.findRecentApproved(TaleStatus.APPROVED, PageRequest.of(0, limit));
     }
 
+    /**
+     * Tales to offer after this one: same categories first, then the newest published
+     * tales so the list is never empty on a thinly-categorised tale.
+     */
+    public List<Tale> findRelated(Tale tale, int limit) {
+        List<Long> categoryIds = tale.getCategories().stream().map(Category::getId).toList();
+        List<Tale> related = new ArrayList<>();
+        Set<Long> seen = new LinkedHashSet<>();
+        seen.add(tale.getId());
+
+        if (!categoryIds.isEmpty()) {
+            for (Tale candidate : taleRepository.findByCategoryIds(
+                    TaleStatus.APPROVED, categoryIds, tale.getId(), PageRequest.of(0, limit))) {
+                if (seen.add(candidate.getId())) {
+                    related.add(candidate);
+                }
+            }
+        }
+        if (related.size() < limit) {
+            for (Tale candidate : taleRepository.findRecentApprovedExcluding(
+                    TaleStatus.APPROVED, tale.getId(), PageRequest.of(0, limit * 2))) {
+                if (related.size() >= limit) {
+                    break;
+                }
+                if (seen.add(candidate.getId())) {
+                    related.add(candidate);
+                }
+            }
+        }
+        return related;
+    }
+
     public Page<Tale> findByStatus(TaleStatus status, Pageable pageable) {
         return taleRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
     }
@@ -87,16 +123,31 @@ public class TaleService {
     }
 
     /**
-     * Admin-only content tweak: description, optional SEO meta text, and optional cover.
-     * Does not change status, review note, audio, title, categories, or author —
+     * Admin-only content tweak: title, categories, description, optional SEO meta text,
+     * and optional cover. Does not change status, review note, audio, or author —
      * approved tales stay live.
      */
     @Transactional
-    public Tale adminUpdateContent(Tale tale, String description, String seoDescription, MultipartFile cover) {
+    public Tale adminUpdateContent(Tale tale, String title, String description, String seoDescription,
+                                   Set<Category> categories, MultipartFile cover) {
         TaleStatus status = tale.getStatus();
         if (status != TaleStatus.PENDING && status != TaleStatus.APPROVED) {
             throw new IllegalArgumentException("فقط قصه‌های در انتظار یا منتشرشده قابل ویرایش هستند");
         }
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("لطفاً نام قصه را بنویسید");
+        }
+        String trimmedTitle = title.trim();
+        if (trimmedTitle.length() > 150) {
+            throw new IllegalArgumentException("نام قصه حداکثر ۱۵۰ کاراکتر باشد");
+        }
+        tale.setTitle(trimmedTitle);
+
+        if (categories == null || categories.isEmpty()) {
+            throw new IllegalArgumentException("لطفاً حداقل یک دسته برای قصه انتخاب کنید");
+        }
+        tale.setCategories(new LinkedHashSet<>(categories));
+
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("لطفاً توضیح قصه را بنویسید");
         }

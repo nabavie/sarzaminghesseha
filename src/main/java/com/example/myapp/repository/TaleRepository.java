@@ -49,4 +49,28 @@ public interface TaleRepository extends JpaRepository<Tale, Long> {
             ORDER BY t.createdAt DESC
             """)
     List<Tale> findRecentApproved(@Param("status") TaleStatus status, Pageable pageable);
+
+    /** Tales sharing at least one category with the given one, newest first. */
+    @Query("""
+            SELECT DISTINCT t FROM Tale t
+            JOIN t.categories c
+            WHERE t.status = :status
+              AND t.id <> :excludeId
+              AND c.id IN :categoryIds
+            ORDER BY t.createdAt DESC
+            """)
+    List<Tale> findByCategoryIds(@Param("status") TaleStatus status,
+                                 @Param("categoryIds") List<Long> categoryIds,
+                                 @Param("excludeId") Long excludeId,
+                                 Pageable pageable);
+
+    @Query("""
+            SELECT t FROM Tale t
+            WHERE t.status = :status
+              AND t.id <> :excludeId
+            ORDER BY t.createdAt DESC
+            """)
+    List<Tale> findRecentApprovedExcluding(@Param("status") TaleStatus status,
+                                           @Param("excludeId") Long excludeId,
+                                           Pageable pageable);
 }

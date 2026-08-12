@@ -30,27 +30,45 @@
                              th:alt="'جلد قصه «' + ${tale.title} + '»'">
                     </div>
                     <div th:class="${tale.coverPath != null ? 'col-md-8' : 'col-12'}">
-                        <h1 class="h2 mb-2" th:text="${tale.title}">عنوان قصه</h1>
-                        <p class="text-muted mb-1">
-                            🎙️ قصه‌گو:
-                            <a class="fw-bold text-decoration-none"
-                               th:href="@{'/storytellers/' + ${tale.storyteller.id}}"
-                               th:text="${tale.storyteller.displayName}">نام</a>
-                        </p>
-                        <p class="text-muted mb-3" th:text="'📅 ' + ${@persianDate.format(tale.createdAt)}">تاریخ</p>
+                        <h1 class="h2 mb-3" th:text="${tale.title}">عنوان قصه</h1>
+
                         <div class="mb-3">
                             <a th:each="cat : ${tale.categories}" th:href="@{/tales(category=${cat.id})}"
-                               class="category-chip" th:text="${cat.name}">دسته</a>
+                               class="category-chip category-chip-lg" th:text="${cat.name}">دسته</a>
                         </div>
-                        <div class="d-flex align-items-center gap-3 flex-wrap">
-                            <span class="stars stars-sm" aria-hidden="true">
-                                <span class="star" th:each="i : ${#numbers.sequence(1,5)}"
-                                      th:classappend="${i <= avgRating + 0.5} ? 'filled'">★</span>
+
+                        <div class="tale-rating mb-3">
+                            <span class="tale-rating-score"
+                                  th:text="${@persianDate.digits(#numbers.formatDecimal(avgRating, 1, 1))}">۰</span>
+                            <span class="rating-stars"
+                                  th:attr="style='--rating:' + ${#numbers.formatDecimal(avgRating, 1, 2, 'POINT')},
+                                           aria-label='امتیاز ' + ${@persianDate.digits(#numbers.formatDecimal(avgRating, 1, 1))} + ' از ۵'"
+                                  role="img">
+                                <span class="rating-stars-empty" aria-hidden="true">★★★★★</span>
+                                <span class="rating-stars-filled" aria-hidden="true">★★★★★</span>
                             </span>
                             <span class="text-muted small">
-                                <span th:text="${@persianDate.digits(#numbers.formatDecimal(avgRating, 1, 1))}">۰</span>
-                                از ۵ (<span th:text="${@persianDate.digits(ratingCount)}">۰</span> امتیاز)
+                                از ۵ — <span th:text="${@persianDate.digits(ratingCount)}">۰</span> امتیاز
                             </span>
+                        </div>
+
+                        <a class="tale-storyteller mb-3" th:href="@{'/storytellers/' + ${tale.storyteller.id}}">
+                            <img th:if="${tale.storyteller.avatarPath != null}"
+                                 th:src="@{'/media/avatars/' + ${tale.storyteller.avatarPath}}"
+                                 class="storyteller-avatar" alt="" loading="lazy" decoding="async">
+                            <div th:if="${tale.storyteller.avatarPath == null}"
+                                 class="storyteller-avatar-placeholder">🎙️</div>
+                            <span class="tale-storyteller-text">
+                                <span class="small text-muted d-block">قصه‌گو</span>
+                                <span class="fw-bold" th:text="${tale.storyteller.displayName}">نام</span>
+                                <span class="small text-muted d-block">
+                                    <span th:text="${@persianDate.digits(storytellerTaleCount)}">۰</span> قصهٔ منتشرشده
+                                </span>
+                            </span>
+                            <span class="tale-storyteller-cta">قصه‌های این قصه‌گو ←</span>
+                        </a>
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <form sec:authorize="isAuthenticated()" th:action="@{'/tales/' + ${tale.id} + '/favorite'}"
                                   method="post" class="m-0">
                                 <button type="submit" class="btn btn-sm"
@@ -58,6 +76,11 @@
                                         th:text="${isFavorite} ? '❤️ در قصه‌های من است' : '🤍 افزودن به قصه‌های من'">
                                 </button>
                             </form>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="shareTale"
+                                    th:attr="data-share-url=${pageCanonical},data-share-title=${tale.title}">
+                                🔗 اشتراک‌گذاری قصه
+                            </button>
+                            <span class="text-muted small" th:text="'📅 ' + ${@persianDate.format(tale.createdAt)}">تاریخ</span>
                         </div>
                     </div>
                 </div>
@@ -72,7 +95,11 @@
                            th:src="@{|/tales/${tale.id}/audio|(t=${@mediaToken.issue(tale.id)})}"
                            th:data-tale-id="${tale.id}"
                            th:data-resume-seconds="${resumeSeconds}"
-                           th:data-authenticated="${currentUser != null}"></audio>
+                           th:data-authenticated="${currentUser != null}"
+                           th:data-autoplay="${autoplay}"></audio>
+                    <div class="alert alert-warning py-2 mt-2 d-none" id="autoplayBlocked" role="alert">
+                        مرورگر اجازهٔ پخش خودکار نداد؛ برای شنیدن این قصه دکمهٔ پخش را بزنید ▶️
+                    </div>
                     <div class="small text-muted mt-1" th:if="${resumeSeconds > 0}">
                         از جایی که بودی ادامه می‌دهیم ▶️
                     </div>
@@ -129,6 +156,52 @@
                     <a th:href="@{/register}">ثبت‌نام کن</a>.
                 </div>
             </div>
+
+            <section class="card p-4 mt-4" id="relatedTales"
+                     th:if="${relatedTales != null && !#lists.isEmpty(relatedTales)}">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h2 class="h5 mb-0">🎧 قصه‌های مشابه</h2>
+                    <div class="form-check form-switch m-0" sec:authorize="isAuthenticated()">
+                        <input class="form-check-input" type="checkbox" id="autoNextToggle" checked>
+                        <label class="form-check-label small" for="autoNextToggle">پخش خودکار قصهٔ بعدی</label>
+                    </div>
+                </div>
+
+                <div class="alert alert-info d-none justify-content-between align-items-center flex-wrap gap-2"
+                     id="autoNextBanner" role="status">
+                    <span>
+                        قصهٔ بعدی «<span id="autoNextTitle">…</span>» تا
+                        <span id="autoNextCountdown">۵</span> ثانیهٔ دیگر پخش می‌شود.
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="autoNextCancel">
+                        نه، لغو کن
+                    </button>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6 col-lg-4" th:each="rel : ${relatedTales}">
+                        <div class="card tale-card h-100"
+                             th:attr="data-related-id=${rel.id},data-related-title=${rel.title}">
+                            <a th:href="@{'/tales/' + ${rel.id}}" class="text-decoration-none text-reset">
+                                <img th:if="${rel.coverPath != null}" th:src="@{'/media/covers/' + ${rel.coverPath}}"
+                                     class="tale-cover tale-cover-sm" th:alt="'جلد قصه «' + ${rel.title} + '»'"
+                                     loading="lazy" decoding="async">
+                                <div th:if="${rel.coverPath == null}"
+                                     class="tale-cover-placeholder tale-cover-sm">📖</div>
+                            </a>
+                            <div class="card-body p-3">
+                                <h3 class="h6 card-title fw-bold mb-1">
+                                    <a th:href="@{'/tales/' + ${rel.id}}" class="text-decoration-none text-reset"
+                                       th:text="${rel.title}">عنوان</a>
+                                </h3>
+                                <p class="small text-muted mb-0">
+                                    🎙️ <span th:text="${rel.storyteller.displayName}">قصه‌گو</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <div class="col-lg-4">
@@ -193,5 +266,6 @@
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
 <script th:src="@{/js/player.js}"></script>
+<script th:src="@{/js/share.js}"></script>
 </body>
 </html>

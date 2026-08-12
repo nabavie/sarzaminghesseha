@@ -31,6 +31,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class TaleController {
 
     private static final int PAGE_SIZE = 12;
+    private static final int RELATED_COUNT = 6;
 
     private final TaleService taleService;
     private final CategoryService categoryService;
@@ -101,7 +102,9 @@ public class TaleController {
     }
 
     @GetMapping("/tales/{id}")
-    public String detail(@PathVariable Long id, Model model, Authentication authentication,
+    public String detail(@PathVariable Long id,
+                         @RequestParam(required = false) String autoplay,
+                         Model model, Authentication authentication,
                          HttpServletRequest request) {
         Tale tale = taleService.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
@@ -114,6 +117,10 @@ public class TaleController {
         model.addAttribute("avgRating", avgRating);
         model.addAttribute("ratingCount", ratingCount);
         model.addAttribute("comments", commentService.topLevelForTale(tale));
+        model.addAttribute("relatedTales", taleService.findRelated(tale, RELATED_COUNT));
+        model.addAttribute("storytellerTaleCount",
+                taleService.countApprovedByStoryteller(tale.getStoryteller()));
+        model.addAttribute("autoplay", autoplay != null && !autoplay.isBlank());
 
         User user = authentication == null ? null
                 : userService.findByUsername(authentication.getName()).orElse(null);

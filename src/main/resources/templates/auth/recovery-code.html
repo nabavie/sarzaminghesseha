@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<html lang="fa" dir="rtl"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('کد بازیابی رمز عبور')}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
@@ -10,6 +12,11 @@
             <div class="card p-4 p-md-5 text-center">
                 <div class="display-4 mb-2">🗝️</div>
                 <h1 class="h3 mb-3" th:text="${afterReset != null ? 'رمز عبور شما عوض شد!' : 'ثبت‌نام شما انجام شد!'}">انجام شد!</h1>
+
+                <p class="text-success fw-bold" sec:authorize="isAuthenticated()"
+                   th:if="${afterReset == null}">
+                    شما وارد حساب خود شده‌اید؛ لازم نیست دوباره رمز بزنید.
+                </p>
 
                 <p class="text-muted">
                     این <strong>کد بازیابی</strong> شماست. اگر روزی رمز عبورتان را فراموش کردید،
@@ -26,7 +33,10 @@
                     هر بار که از کد استفاده کنید، کد تازه‌ای می‌گیرید.
                 </div>
 
-                <a th:href="@{/login}" class="btn btn-primary btn-big w-100">کد را نوشتم؛ برو به صفحهٔ ورود</a>
+                <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}"
+                   class="btn btn-primary btn-big w-100">کد را نوشتم؛ برو به داشبورد</a>
+                <a sec:authorize="!isAuthenticated()" th:href="@{/login}"
+                   class="btn btn-primary btn-big w-100">کد را نوشتم؛ برو به صفحهٔ ورود</a>
             </div>
         </div>
     </div>

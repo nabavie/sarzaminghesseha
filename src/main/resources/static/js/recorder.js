@@ -25,6 +25,14 @@
         return String(text).replace(/[0-9]/g, function (d) { return PERSIAN_DIGITS[+d]; });
     }
 
+    function megabytes(bytes) {
+        var text = (bytes / (1024 * 1024)).toFixed(1);
+        if (text.slice(-2) === '.0') {
+            text = text.slice(0, -2);
+        }
+        return faDigits(text);
+    }
+
     function formatTime(total) {
         var m = Math.floor(total / 60);
         var s = total % 60;
@@ -102,6 +110,13 @@
         previewAudio.src = URL.createObjectURL(blob);
         previewWrap.classList.remove('d-none');
         statusEl.textContent = 'ضبط تمام شد ✔';
+
+        var maxBytes = Number(fileInput.getAttribute('data-max-bytes'));
+        if (maxBytes && file.size > maxBytes) {
+            showError('صدای ضبط‌شده ' + megabytes(file.size) + ' مگابایت شد؛ حداکثر مجاز '
+                + (fileInput.getAttribute('data-max-label') || megabytes(maxBytes))
+                + ' مگابایت است. لطفاً قصه را کوتاه‌تر ضبط کنید.');
+        }
     }
 
     recordBtn.addEventListener('click', function () {

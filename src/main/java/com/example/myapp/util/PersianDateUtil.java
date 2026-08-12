@@ -78,6 +78,11 @@ public class PersianDateUtil {
 
     /** Single Object overload: multiple overloads are ambiguous when called from SpEL. */
     public String digits(Object value) {
+        return persianDigits(value);
+    }
+
+    /** Same conversion as {@link #digits(Object)}, for message building outside templates. */
+    public static String persianDigits(Object value) {
         if (value == null) {
             return "";
         }

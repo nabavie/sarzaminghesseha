@@ -1,7 +1,9 @@
 package com.example.myapp.controller;
 
+import com.example.myapp.model.Category;
 import com.example.myapp.model.Tale;
 import com.example.myapp.model.TaleStatus;
+import com.example.myapp.service.CategoryService;
 import com.example.myapp.service.TaleService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Controller
@@ -22,9 +30,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class AdminTaleController {
 
     private final TaleService taleService;
+    private final CategoryService categoryService;
 
-    public AdminTaleController(TaleService taleService) {
+    public AdminTaleController(TaleService taleService, CategoryService categoryService) {
         this.taleService = taleService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping
@@ -41,7 +51,11 @@ public class AdminTaleController {
 
     @GetMapping("/{id}")
     public String review(@PathVariable Long id, Model model) {
-        model.addAttribute("tale", tale(id));
+        Tale tale = tale(id);
+        model.addAttribute("tale", tale);
+        model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("selectedCategoryIds",
+                tale.getCategories().stream().map(Category::getId).collect(Collectors.toList()));
         return "admin/tale-review";
     }
 
@@ -59,17 +73,30 @@ public class AdminTaleController {
 
     @PostMapping("/{id}/edit-content")
     public String editContent(@PathVariable Long id,
+                              @RequestParam(required = false) String title,
                               @RequestParam String description,
                               @RequestParam(required = false) String seoDescription,
+                              @RequestParam(required = false) List<Long> categoryIds,
                               @RequestParam(required = false) MultipartFile cover,
                               RedirectAttributes redirect) {
         try {
-            taleService.adminUpdateContent(tale(id), description, seoDescription, cover);
-            redirect.addFlashAttribute("success", "توضیح، متن سئو و تصویر قصه به‌روز شد");
+            taleService.adminUpdateContent(tale(id), title, description, seoDescription,
+                    resolveCategories(categoryIds), cover);
+            redirect.addFlashAttribute("success", "نام، دسته، توضیح، متن سئو و تصویر قصه به‌روز شد");
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/tales/" + id;
+    }
+
+    private Set<Category> resolveCategories(List<Long> categoryIds) {
+        if (categoryIds == null) {
+            return Set.of();
+        }
+        return categoryIds.stream()
+                .map(categoryService::findById)
+                .flatMap(Optional::stream)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private Tale tale(Long id) {

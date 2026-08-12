@@ -6,9 +6,19 @@ import com.example.myapp.model.User;
 import com.example.myapp.service.PasswordRecoveryService;
 import com.example.myapp.service.UserService;
 import com.example.myapp.util.MobileNumbers;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.CredentialsContainer;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,10 +31,15 @@ public class AuthController {
 
     private final UserService userService;
     private final PasswordRecoveryService recoveryService;
+    private final DaoAuthenticationProvider authenticationProvider;
+    private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
-    public AuthController(UserService userService, PasswordRecoveryService recoveryService) {
+    public AuthController(UserService userService,
+                          PasswordRecoveryService recoveryService,
+                          DaoAuthenticationProvider authenticationProvider) {
         this.userService = userService;
         this.recoveryService = recoveryService;
+        this.authenticationProvider = authenticationProvider;
     }
 
     @GetMapping("/login")
@@ -53,7 +68,9 @@ public class AuthController {
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("form") RegistrationForm form,
                            BindingResult result,
-                           RedirectAttributes redirect) {
+                           RedirectAttributes redirect,
+                           HttpServletRequest request,
+                           HttpServletResponse response) {
         if (!result.hasFieldErrors("username") && userService.usernameExists(form.getUsername().trim())) {
             result.rejectValue("username", "duplicate", "این نام کاربری قبلاً گرفته شده است؛ یکی دیگر انتخاب کنید");
         }
@@ -75,7 +92,36 @@ public class AuthController {
         User user = userService.register(form);
         // shown exactly once on the next page; only the hash is stored
         redirect.addFlashAttribute("recoveryCode", recoveryService.issueCode(user));
+        signIn(user.getUsername(), form.getPassword(), request, response);
         return "redirect:/register/recovery-code";
+    }
+
+    /**
+     * Logs a freshly registered user in so they don't have to retype credentials they
+     * just chose. Goes through the same provider as the login form, so the account
+     * checks in {@code SecurityConfig} still apply; a failure here is not fatal, the
+     * visitor simply lands on the recovery-code page as a guest and can log in manually.
+     */
+    private void signIn(String username, String rawPassword,
+                        HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Authentication authentication = authenticationProvider.authenticate(
+                    UsernamePasswordAuthenticationToken.unauthenticated(username, rawPassword));
+            if (authentication instanceof CredentialsContainer container) {
+                container.eraseCredentials();
+            }
+            // rotate the id before the context is stored, so a pre-registration
+            // session handed to the visitor cannot be reused
+            request.getSession(true);
+            request.changeSessionId();
+
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(authentication);
+            SecurityContextHolder.setContext(context);
+            securityContextRepository.saveContext(context, request, response);
+        } catch (AuthenticationException e) {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     /** One-time display of the recovery code right after registration (flash-scoped). */

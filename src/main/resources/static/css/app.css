@@ -356,6 +356,87 @@ main {
     color: #fff;
 }
 
+/* On the tale page the chips are the main way into a category, so give them weight */
+.category-chip-lg {
+    padding: .45rem 1.15rem;
+    font-weight: 700;
+    border: 1px solid rgba(59, 52, 134, .18);
+}
+
+/* ---------- Tale detail header ---------- */
+.tale-rating {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+.tale-rating-score {
+    background: var(--moon);
+    color: var(--night-dark);
+    font-weight: 700;
+    font-size: 1.15rem;
+    border-radius: .75rem;
+    padding: .15rem .7rem;
+}
+
+.rating-stars {
+    position: relative;
+    display: inline-block;
+    direction: ltr;
+    line-height: 1;
+    white-space: nowrap;
+    font-size: 1.35rem;
+}
+
+.rating-stars-empty {
+    color: #d8d2e8;
+}
+
+.rating-stars-filled {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    color: var(--moon);
+    /* --rating is the 0-5 average, so a 4.5 average fills exactly nine half-stars */
+    width: calc(var(--rating, 0) / 5 * 100%);
+}
+
+.tale-storyteller {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .7rem .9rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #fff9ef 0%, #efe9ff 100%);
+    color: inherit;
+    text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.tale-storyteller:hover {
+    color: inherit;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(59, 52, 134, .16);
+}
+
+.tale-storyteller-text {
+    line-height: 1.5;
+}
+
+.tale-storyteller-cta {
+    margin-inline-start: auto;
+    color: var(--night);
+    font-weight: 700;
+    font-size: .9rem;
+    white-space: nowrap;
+}
+
+.tale-cover-sm {
+    height: 120px;
+}
+
 /* ---------- Star rating ---------- */
 .stars {
     direction: ltr;
@@ -473,6 +554,51 @@ audio {
 .app-footer a {
     color: var(--moon);
     text-decoration: none;
+}
+
+/* ---------- Mobile bottom navigation ---------- */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    inset-inline: 0;
+    z-index: 1030;
+    display: flex;
+    background: var(--night-dark);
+    box-shadow: 0 -2px 14px rgba(45, 39, 102, .35);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-nav a {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .15rem;
+    min-height: 3.4rem;
+    padding: .45rem .25rem;
+    color: #cfc8ee;
+    text-decoration: none;
+    font-size: .72rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.bottom-nav .bottom-nav-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.bottom-nav a:hover,
+.bottom-nav a.active {
+    color: var(--moon);
+}
+
+/* The bar floats over the page, so give the content room to scroll clear of it */
+@media (max-width: 991.98px) {
+    body {
+        padding-bottom: calc(3.4rem + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 /* ---------- Top-5 ribbon ---------- */

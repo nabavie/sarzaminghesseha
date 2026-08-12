@@ -1,6 +1,7 @@
 package com.example.myapp.service;
 
 import com.example.myapp.config.FileStorageProperties;
+import com.example.myapp.util.PersianDateUtil;
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -28,9 +29,31 @@ public class FileStorageService {
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
 
     private final Path root;
+    private final long maxAudioBytes;
+    private final long maxImageBytes;
 
     public FileStorageService(FileStorageProperties properties) {
         this.root = Paths.get(properties.getDir()).toAbsolutePath().normalize();
+        this.maxAudioBytes = properties.getMaxAudioSize().toBytes();
+        this.maxImageBytes = properties.getMaxImageSize().toBytes();
+    }
+
+    public long getMaxAudioBytes() {
+        return maxAudioBytes;
+    }
+
+    public long getMaxImageBytes() {
+        return maxImageBytes;
+    }
+
+    /** Persian megabyte label, e.g. {@code ۱۰} or {@code ۱٫۵}, for user-facing messages. */
+    public static String megabytes(long bytes) {
+        double mb = bytes / (1024d * 1024d);
+        String text = String.format(Locale.ROOT, "%.1f", mb);
+        if (text.endsWith(".0")) {
+            text = text.substring(0, text.length() - 2);
+        }
+        return PersianDateUtil.persianDigits(text);
     }
 
     @PostConstruct
@@ -46,20 +69,36 @@ public class FileStorageService {
 
     public String storeAudio(MultipartFile file) {
         return store(file, AUDIO, AUDIO_EXTENSIONS,
-                "فرمت فایل صوتی پشتیبانی نمی‌شود؛ لطفاً فایل mp3، m4a، ogg، webm یا wav انتخاب کنید");
+                "فرمت فایل صوتی پشتیبانی نمی‌شود؛ لطفاً فایل mp3، m4a، ogg، webm یا wav انتخاب کنید",
+                maxAudioBytes, audioTooLargeMessage(file.getSize()));
     }
 
     public String storeCover(MultipartFile file) {
         return store(file, COVERS, IMAGE_EXTENSIONS,
-                "فرمت تصویر پشتیبانی نمی‌شود؛ لطفاً عکس jpg، png یا webp انتخاب کنید");
+                "فرمت تصویر پشتیبانی نمی‌شود؛ لطفاً عکس jpg، png یا webp انتخاب کنید",
+                maxImageBytes, imageTooLargeMessage(file.getSize()));
     }
 
     public String storeAvatar(MultipartFile file) {
         return store(file, AVATARS, IMAGE_EXTENSIONS,
-                "فرمت تصویر پشتیبانی نمی‌شود؛ لطفاً عکس jpg، png یا webp انتخاب کنید");
+                "فرمت تصویر پشتیبانی نمی‌شود؛ لطفاً عکس jpg، png یا webp انتخاب کنید",
+                maxImageBytes, imageTooLargeMessage(file.getSize()));
     }
 
-    private String store(MultipartFile file, String subdir, Set<String> allowedExtensions, String errorMessage) {
+    public String audioTooLargeMessage(long actualBytes) {
+        return "حجم فایل صوتی شما " + megabytes(actualBytes) + " مگابایت است؛"
+                + " حداکثر مجاز " + megabytes(maxAudioBytes) + " مگابایت است."
+                + " لطفاً قصه را کوتاه‌تر ضبط کنید یا همان فایل را با کیفیت پایین‌تر (mp3 سبک‌تر) بفرستید.";
+    }
+
+    public String imageTooLargeMessage(long actualBytes) {
+        return "حجم عکس شما " + megabytes(actualBytes) + " مگابایت است؛"
+                + " حداکثر مجاز " + megabytes(maxImageBytes) + " مگابایت است."
+                + " لطفاً عکس را کوچک‌تر کنید یا با کیفیت کمتر ذخیره کنید.";
+    }
+
+    private String store(MultipartFile file, String subdir, Set<String> allowedExtensions, String errorMessage,
+                         long maxBytes, String tooLargeMessage) {
         String original = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
         String extension = "";
         int dot = original.lastIndexOf('.');
@@ -68,6 +107,9 @@ public class FileStorageService {
         }
         if (!allowedExtensions.contains(extension)) {
             throw new IllegalArgumentException(errorMessage);
+        }
+        if (file.getSize() > maxBytes) {
+            throw new IllegalArgumentException(tooLargeMessage);
         }
         String filename = UUID.randomUUID() + "." + extension;
         try {

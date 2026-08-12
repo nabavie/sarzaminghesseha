@@ -4,6 +4,7 @@ import com.example.myapp.model.Role;
 import com.example.myapp.model.User;
 import com.example.myapp.repository.UserRepository;
 import com.example.myapp.service.CommentService;
+import com.example.myapp.service.FileStorageService;
 import com.example.myapp.util.SiteUrl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -21,13 +22,37 @@ public class GlobalModelAttributes {
     private final UserRepository userRepository;
     private final CommentService commentService;
     private final SiteUrl siteUrl;
+    private final FileStorageService storage;
 
     public GlobalModelAttributes(UserRepository userRepository,
                                  CommentService commentService,
-                                 SiteUrl siteUrl) {
+                                 SiteUrl siteUrl,
+                                 FileStorageService storage) {
         this.userRepository = userRepository;
         this.commentService = commentService;
         this.siteUrl = siteUrl;
+        this.storage = storage;
+    }
+
+    /** Upload ceilings, so file inputs can warn before the browser sends the bytes. */
+    @ModelAttribute("maxAudioBytes")
+    public long maxAudioBytes() {
+        return storage.getMaxAudioBytes();
+    }
+
+    @ModelAttribute("maxImageBytes")
+    public long maxImageBytes() {
+        return storage.getMaxImageBytes();
+    }
+
+    @ModelAttribute("maxAudioLabel")
+    public String maxAudioLabel() {
+        return FileStorageService.megabytes(storage.getMaxAudioBytes());
+    }
+
+    @ModelAttribute("maxImageLabel")
+    public String maxImageLabel() {
+        return FileStorageService.megabytes(storage.getMaxImageBytes());
     }
 
     @ModelAttribute("currentUser")
@@ -52,6 +77,13 @@ public class GlobalModelAttributes {
     @ModelAttribute("defaultDescription")
     public String defaultDescription() {
         return DEFAULT_DESCRIPTION;
+    }
+
+    /** Path of the current page, used to highlight the active item in the mobile bottom nav. */
+    @ModelAttribute("currentPath")
+    public String currentPath(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path == null ? "/" : path;
     }
 
     /**

@@ -5,6 +5,7 @@ C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\exam
 C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\example\myapp\config\LoginRateLimitFilter.java
 C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\example\myapp\config\SecurityConfig.java
 C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\example\myapp\config\TaleSeeder.java
+C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\example\myapp\config\UploadErrorAdvice.java
 C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\example\myapp\controller\AdminCategoryController.java
 C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\example\myapp\controller\AdminCommentController.java
 C:\Users\akotech\OneDrive\Desktop\webapp\sarzaminghesseha\src\main\java\com\example\myapp\controller\AdminController.java
