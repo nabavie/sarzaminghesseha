@@ -96,6 +96,9 @@
                            oncontextmenu="return false"
                            th:src="@{|/tales/${tale.id}/audio|(t=${@mediaToken.issue(tale.id)})}"
                            th:data-tale-id="${tale.id}"
+                           th:data-title="${tale.title}"
+                           th:data-artist="${tale.storyteller.displayName}"
+                           th:data-cover="${tale.coverPath != null ? '/media/covers/' + tale.coverPath : '/img/logo.png'}"
                            th:data-resume-seconds="${resumeSeconds}"
                            th:data-authenticated="${currentUser != null}"
                            th:data-autoplay="${autoplay}"></audio>

@@ -24,8 +24,8 @@ public class TalePlayApiController {
         this.mediaToken = mediaToken;
     }
 
-    public record PlayResponse(long id, String title, String audioUrl, String coverUrl,
-                               Long nextId, String nextTitle) {
+    public record PlayResponse(long id, String title, String storytellerName, String audioUrl,
+                               String coverUrl, Long nextId, String nextTitle) {
     }
 
     /**
@@ -42,12 +42,15 @@ public class TalePlayApiController {
         }
         Tale next = taleService.findNextToPlay(tale).orElse(null);
         String audioUrl = "/tales/" + tale.getId() + "/audio?t=" + mediaToken.issue(tale.getId());
-        String coverUrl = tale.getCoverPath() == null ? null : "/media/covers/" + tale.getCoverPath();
+        String coverUrl = tale.getCoverPath() == null ? "/img/logo.png" : "/media/covers/" + tale.getCoverPath();
+        String storytellerName = tale.getStoryteller() == null ? "سرزمین قصه‌ها"
+                : tale.getStoryteller().getDisplayName();
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new PlayResponse(
                         tale.getId(),
                         tale.getTitle(),
+                        storytellerName,
                         audioUrl,
                         coverUrl,
                         next == null ? null : next.getId(),

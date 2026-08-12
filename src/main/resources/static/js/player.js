@@ -21,9 +21,94 @@
     var lastSent = -1;
     var lastTick = 0;
     var advancing = false;
+    var nowPlaying = {
+        title: player.dataset.title || '',
+        artist: player.dataset.artist || 'سرزمین قصه‌ها',
+        coverUrl: player.dataset.cover || '/img/logo.png'
+    };
 
     function faDigits(value) {
         return String(value).replace(/[0-9]/g, function (d) { return PERSIAN_DIGITS[+d]; });
+    }
+
+    function absoluteUrl(url) {
+        if (!url) return '';
+        try {
+            return new URL(url, window.location.origin).href;
+        } catch (e) {
+            return url;
+        }
+    }
+
+    function setNowPlaying(title, artist, coverUrl) {
+        if (title) nowPlaying.title = title;
+        if (artist) nowPlaying.artist = artist;
+        if (coverUrl) nowPlaying.coverUrl = coverUrl;
+        syncMediaSession();
+    }
+
+    function syncMediaSession() {
+        if (!navigator.mediaSession || !window.MediaMetadata) return;
+        var cover = absoluteUrl(nowPlaying.coverUrl);
+        var artwork = cover ? [
+            { src: cover, sizes: '96x96', type: 'image/png' },
+            { src: cover, sizes: '128x128', type: 'image/png' },
+            { src: cover, sizes: '192x192', type: 'image/png' },
+            { src: cover, sizes: '256x256', type: 'image/png' },
+            { src: cover, sizes: '384x384', type: 'image/png' },
+            { src: cover, sizes: '512x512', type: 'image/png' }
+        ] : [];
+        try {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: nowPlaying.title || '',
+                artist: nowPlaying.artist || 'سرزمین قصه‌ها',
+                album: 'سرزمین قصه‌ها',
+                artwork: artwork
+            });
+        } catch (e) { /* ignore */ }
+        navigator.mediaSession.playbackState = player.paused ? 'paused' : 'playing';
+        if (typeof navigator.mediaSession.setPositionState === 'function'
+                && isFinite(player.duration) && player.duration > 0) {
+            try {
+                navigator.mediaSession.setPositionState({
+                    duration: player.duration,
+                    playbackRate: player.playbackRate || 1,
+                    position: Math.min(Math.max(player.currentTime || 0, 0), player.duration)
+                });
+            } catch (e) { /* ignore */ }
+        }
+    }
+
+    function setUpMediaSession() {
+        if (!navigator.mediaSession) return;
+        var handlers = {
+            play: function () { player.play(); },
+            pause: function () { player.pause(); },
+            stop: function () { player.pause(); player.currentTime = 0; },
+            seekbackward: function (details) {
+                player.currentTime = Math.max((player.currentTime || 0) - (details.seekOffset || 10), 0);
+            },
+            seekforward: function (details) {
+                var dur = isFinite(player.duration) ? player.duration : (player.currentTime || 0) + 10;
+                player.currentTime = Math.min((player.currentTime || 0) + (details.seekOffset || 10), dur);
+            },
+            seekto: function (details) {
+                if (details && typeof details.seekTime === 'number') {
+                    player.currentTime = details.seekTime;
+                }
+            }
+        };
+        Object.keys(handlers).forEach(function (action) {
+            try {
+                navigator.mediaSession.setActionHandler(action, handlers[action]);
+            } catch (e) { /* action not supported */ }
+        });
+        player.addEventListener('play', syncMediaSession);
+        player.addEventListener('playing', syncMediaSession);
+        player.addEventListener('pause', syncMediaSession);
+        player.addEventListener('loadedmetadata', syncMediaSession);
+        player.addEventListener('durationchange', syncMediaSession);
+        syncMediaSession();
     }
 
     if (resume > 0) {
@@ -118,6 +203,7 @@
         }
     }
 
+    setUpMediaSession();
     setUpAutoNext();
     setUpProgress();
 
@@ -187,13 +273,7 @@
             if (window.history && history.pushState) {
                 history.pushState({ taleId: data.id }, data.title, '/tales/' + data.id);
             }
-            if (navigator.mediaSession && window.MediaMetadata) {
-                var meta = { title: data.title, artist: 'سرزمین قصه‌ها' };
-                if (data.coverUrl) {
-                    meta.artwork = [{ src: data.coverUrl }];
-                }
-                navigator.mediaSession.metadata = new MediaMetadata(meta);
-            }
+            setNowPlaying(data.title, data.storytellerName, data.coverUrl);
             var blocked = document.getElementById('autoplayBlocked');
             if (blocked) blocked.classList.add('d-none');
         }
@@ -211,8 +291,8 @@
                 .then(function (data) {
                     applyTale(data);
                     var playPromise = player.play();
-                    if (playPromise && typeof playPromise.catch === 'function') {
-                        playPromise.catch(function () {
+                    if (playPromise && typeof playPromise.then === 'function') {
+                        playPromise.then(syncMediaSession).catch(function () {
                             var blocked = document.getElementById('autoplayBlocked');
                             if (blocked) blocked.classList.remove('d-none');
                         });
