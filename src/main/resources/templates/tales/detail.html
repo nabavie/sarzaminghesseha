@@ -25,7 +25,7 @@
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card p-4 p-md-5">
-                <div class="row g-4 align-items-start">
+                <div class="row g-4 align-items-start" id="taleHeader">
                     <div class="col-md-4" th:if="${tale.coverPath != null}">
                         <img th:src="@{'/media/covers/' + ${tale.coverPath}}" class="rounded-4 w-100"
                              id="taleCover"
@@ -139,10 +139,13 @@
                     </div>
                 </div>
 
-                <h2 class="h5">دربارهٔ این قصه</h2>
-                <p style="white-space: pre-line;" th:text="${tale.description}">توضیح</p>
+                <div id="taleAbout">
+                    <h2 class="h5">دربارهٔ این قصه</h2>
+                    <p style="white-space: pre-line;" th:text="${tale.description}">توضیح</p>
+                </div>
 
-                <div sec:authorize="isAuthenticated()" class="border rounded-3 p-3 mt-4 text-center">
+                <div sec:authorize="isAuthenticated()" class="border rounded-3 p-3 mt-4 text-center"
+                     id="taleRatingBox">
                     <div class="fw-bold mb-2">به این قصه چند ستاره می‌دهی؟</div>
                     <form th:action="@{'/tales/' + ${tale.id} + '/rating'}" method="post" class="m-0">
                         <div class="stars interactive">
@@ -185,7 +188,7 @@
                     </button>
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3" id="relatedGrid">
                     <div class="col-6 col-lg-4" th:each="rel : ${relatedTales}">
                         <div class="card tale-card h-100"
                              th:attr="data-related-id=${rel.id},data-related-title=${rel.title}">

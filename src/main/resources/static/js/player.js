@@ -238,6 +238,30 @@
             }
         }
 
+        // The rest of the page (description, rating, comments, related tales)
+        // is server-rendered for the tale we navigated away from. Fetch the new
+        // tale's page and swap those sections in place, leaving the playing
+        // <audio> element untouched so playback is not interrupted.
+        var REFRESH_SECTION_IDS = ['taleHeader', 'taleAbout', 'taleRatingBox', 'comments', 'relatedGrid'];
+
+        function refreshTaleSections(id) {
+            fetch('/tales/' + id, { credentials: 'same-origin' })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('page');
+                    return response.text();
+                })
+                .then(function (html) {
+                    if (taleId !== id) return; // user moved on again meanwhile
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+                    REFRESH_SECTION_IDS.forEach(function (sectionId) {
+                        var current = document.getElementById(sectionId);
+                        var fresh = doc.getElementById(sectionId);
+                        if (current && fresh) current.innerHTML = fresh.innerHTML;
+                    });
+                })
+                .catch(function () { /* stale sections beat interrupting playback */ });
+        }
+
         function applyTale(data) {
             taleId = data.id;
             lastSent = -1;
@@ -276,6 +300,7 @@
             setNowPlaying(data.title, data.storytellerName, data.coverUrl);
             var blocked = document.getElementById('autoplayBlocked');
             if (blocked) blocked.classList.add('d-none');
+            refreshTaleSections(data.id);
         }
 
         function goNext() {
