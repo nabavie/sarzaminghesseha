@@ -14,6 +14,15 @@
 
     <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
 
+    <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2"
+         th:if="${currentUser != null && #strings.isEmpty(currentUser.mobile)}">
+        <div>
+            📱 هنوز شماره موبایلی برای حسابتان ثبت نشده.
+            با ثبت موبایل می‌توانید با پیامک وارد شوید و پیام‌های سرزمین قصه‌ها را بگیرید.
+        </div>
+        <a th:href="@{/dashboard/profile}" class="btn btn-sm btn-primary">ثبت شماره موبایل</a>
+    </div>
+
     <!-- Total listening time -->
     <div class="alert alert-light border d-flex align-items-center gap-2 mb-4"
          th:if="${totalListenedSeconds != null && totalListenedSeconds > 0}">

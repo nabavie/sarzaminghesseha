@@ -59,6 +59,9 @@ public class StorytellerPublicController {
         }
         // Pagination: always canonicalize to page 1 profile URL
         model.addAttribute("pageCanonical", base + "/storytellers/" + storyteller.getId());
+        if (page > 0) {
+            model.addAttribute("pageRobots", "noindex, follow");
+        }
         model.addAttribute("jsonLd", StructuredData.storyteller(base, storyteller, taleCount));
         return "storytellers/profile";
     }

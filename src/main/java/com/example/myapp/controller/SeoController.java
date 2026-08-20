@@ -40,12 +40,6 @@ public class SeoController {
                 Disallow: /admin/
                 Disallow: /dashboard/
                 Disallow: /storyteller/
-                Disallow: /login
-                Disallow: /register
-                Disallow: /forgot-password
-                Disallow: /feedback
-                Disallow: /logout
-                Disallow: /error
                 Disallow: /*/audio
 
                 Sitemap: %s/sitemap.xml

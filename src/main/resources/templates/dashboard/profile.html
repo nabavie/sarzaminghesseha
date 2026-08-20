@@ -32,6 +32,19 @@
                         <input type="text" class="form-control form-control-lg" id="displayName" name="displayName"
                                th:value="${user.displayName}" required maxlength="100">
                     </div>
+                    <div class="mb-3">
+                        <label for="mobile" class="form-label fw-bold">شماره موبایل</label>
+                        <input type="tel" class="form-control form-control-lg" id="mobile" name="mobile" dir="ltr"
+                               th:value="${user.mobile}" placeholder="09123456789" inputmode="tel" autocomplete="tel"
+                               th:required="${!#strings.isEmpty(user.mobile)}">
+                        <div class="form-text"
+                             th:if="${#strings.isEmpty(user.mobile)}">
+                            هنوز موبایلی ثبت نکرده‌اید؛ با افزودن آن می‌توانید با پیامک وارد شوید.
+                        </div>
+                        <div class="form-text" th:unless="${#strings.isEmpty(user.mobile)}">
+                            شماره باید یکتا باشد (بین حساب‌های فعال).
+                        </div>
+                    </div>
                     <div class="mb-4">
                         <label for="avatar" class="form-label fw-bold">تصویر پروفایل</label>
                         <input type="file" class="form-control form-control-lg" id="avatar" name="avatar"

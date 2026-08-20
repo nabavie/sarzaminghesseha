@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('ارسال پیامک')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <h1 class="h3 mb-0">📩 ارسال پیامک</h1>
+        <a th:href="@{/admin}" class="btn btn-outline-secondary">بازگشت به پیشخوان</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${success != null}" th:text="${success}">انجام شد</div>
+    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}">خطا</div>
+
+    <p class="text-muted">
+        <span th:text="${@persianDate.digits(mobileUserCount)}">۰</span>
+        کاربر فعال با شماره موبایل ثبت‌شده وجود دارد.
+    </p>
+
+    <form th:action="@{/admin/sms}" method="post" class="card p-4 p-md-5" id="smsForm">
+        <div class="mb-4">
+            <label for="messageText" class="form-label fw-bold">متن پیامک</label>
+            <textarea class="form-control" id="messageText" name="messageText" rows="5" required
+                      maxlength="900" placeholder="متن پیام را اینجا بنویسید…"></textarea>
+            <div class="form-text"><span id="charCount">۰</span> نویسه</div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="allUsers" name="allUsers" value="true">
+            <label class="form-check-label" for="allUsers">
+                ارسال به <strong>همهٔ کاربران فعال</strong> که موبایل دارند
+            </label>
+        </div>
+
+        <div id="picker">
+            <label for="userSearch" class="form-label fw-bold">جست‌وجو و انتخاب کاربران</label>
+            <input type="search" class="form-control form-control-lg mb-2" id="userSearch" dir="rtl"
+                   placeholder="نام، نام کاربری یا موبایل…" autocomplete="off">
+            <div id="searchResults" class="list-group mb-3"></div>
+            <div class="fw-bold mb-2">انتخاب‌شدهها: <span id="selectedCount">۰</span></div>
+            <div id="selectedList" class="d-flex flex-wrap gap-2 mb-3"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-big">ارسال پیامک</button>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script th:inline="javascript">
+    (function () {
+        var searchUrl = /*[[@{/admin/sms/users}]]*/ '/admin/sms/users';
+        var search = document.getElementById('userSearch');
+        var results = document.getElementById('searchResults');
+        var selectedList = document.getElementById('selectedList');
+        var selectedCount = document.getElementById('selectedCount');
+        var allUsers = document.getElementById('allUsers');
+        var picker = document.getElementById('picker');
+        var form = document.getElementById('smsForm');
+        var textarea = document.getElementById('messageText');
+        var charCount = document.getElementById('charCount');
+        var selected = new Map();
+        var timer = null;
+
+        textarea.addEventListener('input', function () {
+            charCount.textContent = String(textarea.value.length);
+        });
+
+        allUsers.addEventListener('change', function () {
+            picker.classList.toggle('d-none', allUsers.checked);
+        });
+
+        search.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(runSearch, 250);
+        });
+
+        function runSearch() {
+            var q = search.value.trim();
+            var url = searchUrl + '?q=' + encodeURIComponent(q);
+            fetch(url, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(renderResults)
+                .catch(function () { results.innerHTML = ''; });
+        }
+
+        function renderResults(users) {
+            results.innerHTML = '';
+            if (!users.length) {
+                var empty = document.createElement('div');
+                empty.className = 'list-group-item text-muted';
+                empty.textContent = 'کسی پیدا نشد';
+                results.appendChild(empty);
+                return;
+            }
+            users.forEach(function (u) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'list-group-item list-group-item-action d-flex justify-content-between';
+                btn.innerHTML = '<span><strong></strong> <span class="text-muted small"></span></span><span dir="ltr" class="small"></span>';
+                btn.querySelector('strong').textContent = u.displayName;
+                btn.querySelector('.text-muted').textContent = '@' + u.username;
+                btn.querySelector('[dir="ltr"]').textContent = u.mobile;
+                if (selected.has(String(u.id))) btn.classList.add('active');
+                btn.addEventListener('click', function () { toggle(u); renderResults(users); });
+                results.appendChild(btn);
+            });
+        }
+
+        function toggle(u) {
+            var id = String(u.id);
+            if (selected.has(id)) selected.delete(id);
+            else selected.set(id, u);
+            paintSelected();
+        }
+
+        function paintSelected() {
+            selectedList.innerHTML = '';
+            selected.forEach(function (u, id) {
+                var chip = document.createElement('span');
+                chip.className = 'badge text-bg-primary d-inline-flex align-items-center gap-1 p-2';
+                chip.textContent = u.displayName + ' ';
+                var x = document.createElement('button');
+                x.type = 'button';
+                x.className = 'btn-close btn-close-white btn-sm';
+                x.addEventListener('click', function () {
+                    selected.delete(id);
+                    paintSelected();
+                });
+                chip.appendChild(x);
+                var hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'userIds';
+                hidden.value = id;
+                chip.appendChild(hidden);
+                selectedList.appendChild(chip);
+            });
+            selectedCount.textContent = String(selected.size);
+        }
+
+        form.addEventListener('submit', function (event) {
+            if (allUsers.checked) return;
+            if (selected.size === 0) {
+                event.preventDefault();
+                alert('دست‌کم یک کاربر را انتخاب کنید یا گزینهٔ ارسال به همه را بزنید.');
+            }
+        });
+    })();
+</script>
+</body>
+</html>

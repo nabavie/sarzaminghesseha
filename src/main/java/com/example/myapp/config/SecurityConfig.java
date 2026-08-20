@@ -65,6 +65,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/register", "/register/recovery-code", "/login",
+                                "/login/sms/**",
                                 "/forgot-password", "/feedback", "/about", "/faq", "/error",
                                 "/css/**", "/js/**", "/img/**", "/vendor/**", "/fonts/**", "/media/**",
                                 "/robots.txt", "/sitemap.xml", "/favicon.ico").permitAll()

@@ -26,6 +26,22 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
+    /** Uniqueness among <em>enabled</em> accounts only; disabled numbers can be reused. */
+    public boolean mobileTakenByActiveUser(String mobile) {
+        return mobile != null && userRepository.existsByMobileAndEnabledTrue(mobile);
+    }
+
+    public boolean mobileTakenByOtherActiveUser(String mobile, Long userId) {
+        return mobile != null && userRepository.existsByMobileAndEnabledTrueAndIdNot(mobile, userId);
+    }
+
+    public Optional<User> findActiveByMobile(String mobile) {
+        if (mobile == null || mobile.isBlank()) {
+            return Optional.empty();
+        }
+        return userRepository.findFirstByMobileAndEnabledTrue(mobile);
+    }
+
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
@@ -54,11 +70,12 @@ public class UserService {
     }
 
     @Transactional
-    public void updateProfile(User user, String displayName, String avatarPath) {
+    public void updateProfile(User user, String displayName, String avatarPath, String mobile) {
         user.setDisplayName(displayName.trim());
         if (avatarPath != null) {
             user.setAvatarPath(avatarPath);
         }
+        user.setMobile(mobile);
         userRepository.save(user);
     }
 

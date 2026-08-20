@@ -13,6 +13,7 @@ import com.example.myapp.service.PasswordRecoveryService;
 import com.example.myapp.service.ProgressService;
 import com.example.myapp.service.StorytellerRequestService;
 import com.example.myapp.service.UserService;
+import com.example.myapp.util.MobileNumbers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -134,6 +135,7 @@ public class DashboardController {
 
     @PostMapping("/profile")
     public String updateProfile(@RequestParam String displayName,
+                                @RequestParam(required = false) String mobile,
                                 @RequestParam(required = false) MultipartFile avatar,
                                 Principal principal,
                                 RedirectAttributes redirect) {
@@ -141,6 +143,27 @@ public class DashboardController {
         String name = displayName == null ? "" : displayName.trim();
         if (name.isEmpty()) {
             redirect.addFlashAttribute("error", "نام نمی‌تواند خالی باشد");
+            return "redirect:/dashboard/profile";
+        }
+        String newMobile;
+        try {
+            boolean clearing = mobile == null || mobile.isBlank();
+            if (clearing) {
+                if (user.getMobile() != null && !user.getMobile().isBlank()) {
+                    redirect.addFlashAttribute("error", "شماره موبایل را خالی نگذارید");
+                    return "redirect:/dashboard/profile";
+                }
+                newMobile = null;
+            } else {
+                newMobile = MobileNumbers.normalizeRequired(mobile);
+                if (userService.mobileTakenByOtherActiveUser(newMobile, user.getId())) {
+                    redirect.addFlashAttribute("error",
+                            "این شماره موبایل قبلاً برای یک حساب فعال ثبت شده است");
+                    return "redirect:/dashboard/profile";
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
             return "redirect:/dashboard/profile";
         }
         try {
@@ -151,7 +174,7 @@ public class DashboardController {
                     storage.delete(FileStorageService.AVATARS, user.getAvatarPath());
                 }
             }
-            userService.updateProfile(user, name, avatarPath);
+            userService.updateProfile(user, name, avatarPath, newMobile);
             redirect.addFlashAttribute("success", "پروفایل شما ذخیره شد ✔");
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("error", e.getMessage());

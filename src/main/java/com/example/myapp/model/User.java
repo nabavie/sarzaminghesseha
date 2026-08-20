@@ -34,7 +34,7 @@ public class User {
     @Column(nullable = false, length = 100)
     private String displayName;
 
-    /** Optional Iranian mobile, stored as {@code 09#########}; null when not provided. */
+    /** Iranian mobile, stored as {@code 09#########}; required for new sign-ups, optional for older accounts. */
     @Column(length = 20)
     private String mobile;
 

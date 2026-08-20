@@ -17,6 +17,27 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
 
+    Optional<User> findFirstByMobileAndEnabledTrue(String mobile);
+
+    boolean existsByMobileAndEnabledTrue(String mobile);
+
+    boolean existsByMobileAndEnabledTrueAndIdNot(String mobile, Long id);
+
+    List<User> findByEnabledTrueAndMobileIsNotNull();
+
+    long countByEnabledTrueAndMobileIsNotNull();
+
+    @Query("""
+            SELECT u FROM User u
+            WHERE u.enabled = true
+              AND u.mobile IS NOT NULL
+              AND (:q = '' OR LOWER(u.displayName) LIKE LOWER(CONCAT('%', :q, '%'))
+                   OR LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%'))
+                   OR u.mobile LIKE CONCAT('%', :q, '%'))
+            ORDER BY u.displayName ASC
+            """)
+    List<User> searchEnabledWithMobile(@Param("q") String q, org.springframework.data.domain.Pageable pageable);
+
     @Query("""
             SELECT DISTINCT u FROM User u
             JOIN u.roles r

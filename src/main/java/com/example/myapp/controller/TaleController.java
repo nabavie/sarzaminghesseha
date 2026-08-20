@@ -97,6 +97,9 @@ public class TaleController {
                 "جست‌وجوی قصه صوتی، قصه شب و داستان برای کودکان و نوجوانان در سرزمین قصه‌ها.");
         // Filters/pagination share one canonical to avoid thin duplicate URLs
         model.addAttribute("pageCanonical", siteUrl.base(request) + "/tales");
+        if (page > 0 || !query.isEmpty() || category != null || storyteller != null) {
+            model.addAttribute("pageRobots", "noindex, follow");
+        }
         model.addAttribute("jsonLd", StructuredData.talesCollection(siteUrl.base(request)));
         return "tales/list";
     }

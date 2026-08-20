@@ -10,54 +10,116 @@
             <div class="card p-4 p-md-5">
                 <h1 class="h3 text-center mb-4">🔑 ورود به سرزمین قصه‌ها</h1>
 
-                <div class="alert alert-danger" th:if="${param.error != null}">
-                    نام کاربری یا رمز عبور درست نیست. دوباره تلاش کنید.
-                </div>
-                <div class="alert alert-warning" th:if="${param.disabled != null}">
-                    🚫 حساب کاربری شما توسط مدیر غیرفعال شده است و فعلاً نمی‌توانید وارد شوید.
-                    برای فعال‌سازی دوباره با مدیر سایت تماس بگیرید.
-                </div>
-                <div class="alert alert-danger" th:if="${param.banned != null}">
-                    ⛔ به دلیل تلاش‌های ناموفق زیاد، ورود شما به مدت ۱۰ دقیقه مسدود شده است.
-                    کمی بعد دوباره تلاش کنید.
-                </div>
-                <div class="alert alert-success" th:if="${param.registered != null}">
-                    ثبت‌نام شما انجام شد! حالا وارد شوید.
+                <div class="d-flex gap-2 mb-4" role="tablist" aria-label="روش ورود">
+                    <button type="button" class="btn w-50" id="loginTabPassword" data-login-tab="password"
+                            th:classappend="${smsTab} ? ' btn-outline-primary' : ' btn-primary'">نام کاربری</button>
+                    <button type="button" class="btn w-50" id="loginTabSms" data-login-tab="sms"
+                            th:classappend="${smsTab} ? ' btn-primary' : ' btn-outline-primary'">پیامک</button>
                 </div>
 
-                <form th:action="@{/login}" method="post" novalidate>
-                    <div class="mb-3">
-                        <label for="username" class="form-label fw-bold">نام کاربری</label>
-                        <input type="text" class="form-control form-control-lg" id="username" name="username"
-                               autofocus autocomplete="username" required>
-                        <div class="invalid-feedback">لطفاً نام کاربری خود را بنویسید</div>
+                <div id="loginPanePassword" th:classappend="${smsTab} ? ' d-none'">
+                    <div class="alert alert-danger" th:if="${param.error != null}">
+                        نام کاربری یا رمز عبور درست نیست. دوباره تلاش کنید.
                     </div>
-                    <div class="mb-4">
-                        <label for="password" class="form-label fw-bold">رمز عبور</label>
-                        <div class="input-group has-validation">
-                            <input type="password" class="form-control form-control-lg" id="password" name="password"
-                                   autocomplete="current-password" required>
-                            <button type="button" class="btn password-toggle"
-                                    data-password-toggle="password" aria-label="نمایش رمز عبور"
-                                    title="نمایش رمز عبور" aria-pressed="false">
-                                <svg class="password-toggle-show" aria-hidden="true" viewBox="0 0 24 24">
-                                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
-                                    <circle cx="12" cy="12" r="2.5"/>
-                                </svg>
-                                <svg class="password-toggle-hide d-none" aria-hidden="true" viewBox="0 0 24 24">
-                                    <path d="M3 3l18 18M10.6 6.1A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-2.1 2.8M6.2 6.2C3.8 7.9 2.5 12 2.5 12s3.5 6 9.5 6a9.7 9.7 0 0 0 3.1-.5M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
-                                </svg>
-                            </button>
-                            <div class="invalid-feedback">لطفاً رمز عبور خود را بنویسید</div>
+                    <div class="alert alert-warning" th:if="${param.disabled != null}">
+                        🚫 حساب کاربری شما توسط مدیر غیرفعال شده است و فعلاً نمی‌توانید وارد شوید.
+                        برای فعال‌سازی دوباره با مدیر سایت تماس بگیرید.
+                    </div>
+                    <div class="alert alert-danger" th:if="${param.banned != null}">
+                        ⛔ به دلیل تلاش‌های ناموفق زیاد، ورود شما به مدت ۱۰ دقیقه مسدود شده است.
+                        کمی بعد دوباره تلاش کنید.
+                    </div>
+                    <div class="alert alert-success" th:if="${param.registered != null}">
+                        ثبت‌نام شما انجام شد! حالا وارد شوید.
+                    </div>
+
+                    <form th:action="@{/login}" method="post" novalidate>
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-bold">نام کاربری</label>
+                            <input type="text" class="form-control form-control-lg" id="username" name="username"
+                                   autocomplete="username" required>
+                            <div class="invalid-feedback">لطفاً نام کاربری خود را بنویسید</div>
                         </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-big w-100">ورود</button>
-                </form>
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-bold">رمز عبور</label>
+                            <div class="input-group has-validation">
+                                <input type="password" class="form-control form-control-lg" id="password" name="password"
+                                       autocomplete="current-password" required>
+                                <button type="button" class="btn password-toggle"
+                                        data-password-toggle="password" aria-label="نمایش رمز عبور"
+                                        title="نمایش رمز عبور" aria-pressed="false">
+                                    <svg class="password-toggle-show" aria-hidden="true" viewBox="0 0 24 24">
+                                        <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+                                        <circle cx="12" cy="12" r="2.5"/>
+                                    </svg>
+                                    <svg class="password-toggle-hide d-none" aria-hidden="true" viewBox="0 0 24 24">
+                                        <path d="M3 3l18 18M10.6 6.1A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-2.1 2.8M6.2 6.2C3.8 7.9 2.5 12 2.5 12s3.5 6 9.5 6a9.7 9.7 0 0 0 3.1-.5M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+                                    </svg>
+                                </button>
+                                <div class="invalid-feedback">لطفاً رمز عبور خود را بنویسید</div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-big w-100">ورود</button>
+                    </form>
 
-                <p class="text-center mt-3 mb-0">
-                    <a th:href="@{/forgot-password}" class="small">رمز عبور را فراموش کرده‌اید؟</a>
-                </p>
-                <p class="text-center mt-3 mb-0">
+                    <p class="text-center mt-3 mb-0">
+                        <a th:href="@{/forgot-password}" class="small">رمز عبور را فراموش کرده‌اید؟</a>
+                    </p>
+                </div>
+
+                <div id="loginPaneSms" th:classappend="${smsTab} ? '' : ' d-none'">
+                    <div class="alert alert-warning" th:if="${smsExpired}">
+                        ⏳ زمان کد به پایان رسیده است. دوباره کد بگیرید.
+                    </div>
+                    <div class="alert alert-danger" th:if="${smsError != null and smsExpired == null}" th:text="${smsError}">خطا</div>
+                    <div class="alert alert-success" th:if="${smsInfo != null}" th:text="${smsInfo}">ارسال شد</div>
+                    <div class="alert alert-warning" th:if="${param.disabled != null}">
+                        🚫 حساب کاربری شما توسط مدیر غیرفعال شده است.
+                    </div>
+                    <div class="alert alert-danger" th:if="${param.banned != null}">
+                        ⛔ ورود شما به مدت ۱۰ دقیقه مسدود شده است.
+                    </div>
+
+                    <form th:unless="${smsAwaitingCode}" th:action="@{/login/sms/send}" method="post" novalidate>
+                        <div class="mb-4">
+                            <label for="smsMobile" class="form-label fw-bold">شماره موبایل</label>
+                            <input type="tel" class="form-control form-control-lg" id="smsMobile" name="mobile"
+                                   dir="ltr" inputmode="tel" autocomplete="tel" required
+                                   placeholder="09123456789"
+                                   th:value="${smsMobile}">
+                            <div class="form-text">کد یک‌بارمصرف ۵ دقیقه‌ای به این شماره پیامک می‌شود.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-big w-100">دریافت کد پیامکی</button>
+                    </form>
+
+                    <div th:if="${smsAwaitingCode}">
+                        <p class="text-muted small mb-3">
+                            کد به شماره
+                            <span dir="ltr" class="fw-bold" th:text="${smsMaskedMobile}">0912***89</span>
+                            فرستاده شد.
+                            <span id="otpCountdown" class="d-block mt-1" th:if="${smsExpiresAtMillis != null}"
+                                  th:attr="data-expires=${smsExpiresAtMillis}"></span>
+                        </p>
+                        <form th:action="@{/login/sms/verify}" method="post" novalidate>
+                            <div class="mb-4">
+                                <label for="smsCode" class="form-label fw-bold">کد پیامک‌شده</label>
+                                <input type="text" class="form-control form-control-lg text-center" id="smsCode"
+                                       name="code" dir="ltr" inputmode="numeric" autocomplete="one-time-code"
+                                       maxlength="5" required placeholder="۱۲۳۴۵">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-big w-100">ورود با پیامک</button>
+                        </form>
+                        <form th:action="@{/login/sms/send}" method="post" class="mt-3">
+                            <input type="hidden" name="mobile" th:value="${smsMobile}">
+                            <button type="submit" class="btn btn-outline-secondary w-100">ارسال دوبارهٔ کد</button>
+                        </form>
+                        <p class="text-center mt-3 mb-0">
+                            <a th:href="@{/login/sms/cancel}" class="small">شماره دیگری می‌خواهم</a>
+                        </p>
+                    </div>
+                </div>
+
+                <p class="text-center mt-4 mb-0">
                     هنوز عضو نشده‌اید؟
                     <a th:href="@{/register}" class="fw-bold">ثبت‌نام کنید</a>
                 </p>
@@ -71,24 +133,66 @@
 <script th:src="@{/js/password-toggle.js}"></script>
 <script>
     (function () {
-        var form = document.querySelector('form[novalidate]');
-        form.addEventListener('submit', function (event) {
-            var valid = true;
-            form.querySelectorAll('input[required]').forEach(function (input) {
-                var empty = input.value.trim() === '';
-                input.classList.toggle('is-invalid', empty);
-                if (empty) valid = false;
-            });
-            if (!valid) {
+        function activateLoginTab(tab) {
+            var sms = tab === 'sms';
+            var panePassword = document.getElementById('loginPanePassword');
+            var paneSms = document.getElementById('loginPaneSms');
+            var btnPassword = document.getElementById('loginTabPassword');
+            var btnSms = document.getElementById('loginTabSms');
+            if (!panePassword || !paneSms || !btnPassword || !btnSms) return;
+            panePassword.classList.toggle('d-none', sms);
+            paneSms.classList.toggle('d-none', !sms);
+            btnPassword.classList.toggle('btn-primary', !sms);
+            btnPassword.classList.toggle('btn-outline-primary', sms);
+            btnSms.classList.toggle('btn-primary', sms);
+            btnSms.classList.toggle('btn-outline-primary', !sms);
+        }
+
+        document.querySelectorAll('[data-login-tab]').forEach(function (el) {
+            el.addEventListener('click', function (event) {
                 event.preventDefault();
-                form.querySelector('.is-invalid').focus();
-            }
-        });
-        form.querySelectorAll('input[required]').forEach(function (input) {
-            input.addEventListener('input', function () {
-                input.classList.remove('is-invalid');
+                activateLoginTab(el.getAttribute('data-login-tab'));
             });
         });
+
+        document.querySelectorAll('form[novalidate]').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                var valid = true;
+                form.querySelectorAll('input[required]').forEach(function (input) {
+                    var empty = input.value.trim() === '';
+                    input.classList.toggle('is-invalid', empty);
+                    if (empty) valid = false;
+                });
+                if (!valid) {
+                    event.preventDefault();
+                    var first = form.querySelector('.is-invalid');
+                    if (first) first.focus();
+                }
+            });
+            form.querySelectorAll('input[required]').forEach(function (input) {
+                input.addEventListener('input', function () {
+                    input.classList.remove('is-invalid');
+                });
+            });
+        });
+
+        var countdown = document.getElementById('otpCountdown');
+        if (countdown && countdown.dataset.expires) {
+            var expires = parseInt(countdown.dataset.expires, 10);
+            function tick() {
+                var left = Math.floor((expires - Date.now()) / 1000);
+                if (left <= 0) {
+                    countdown.textContent = 'زمان این کد به پایان رسیده است. دوباره کد بگیرید.';
+                    countdown.classList.add('text-danger');
+                    return;
+                }
+                var m = Math.floor(left / 60);
+                var s = left % 60;
+                countdown.textContent = 'اعتبار کد: ' + m + ':' + String(s).padStart(2, '0');
+                requestAnimationFrame(function () { setTimeout(tick, 250); });
+            }
+            tick();
+        }
     })();
 </script>
 </body>

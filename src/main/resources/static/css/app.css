@@ -286,6 +286,16 @@ main {
     padding: .85rem 2rem;
 }
 
+.auth-tabs .nav-link {
+    color: var(--night);
+    font-weight: 700;
+}
+
+.auth-tabs .nav-link.active {
+    background: var(--night);
+    color: #fff;
+}
+
 .form-control, .form-select {
     border-radius: .8rem;
     padding: .6rem .9rem;

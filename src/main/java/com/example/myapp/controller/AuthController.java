@@ -4,11 +4,16 @@ import com.example.myapp.dto.ForgotPasswordForm;
 import com.example.myapp.dto.RegistrationForm;
 import com.example.myapp.model.User;
 import com.example.myapp.service.PasswordRecoveryService;
+import com.example.myapp.service.SmsIrClient;
+import com.example.myapp.service.SmsOtpService;
 import com.example.myapp.service.UserService;
 import com.example.myapp.util.MobileNumbers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,32 +25,55 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
     private final UserService userService;
     private final PasswordRecoveryService recoveryService;
     private final DaoAuthenticationProvider authenticationProvider;
+    private final SmsIrClient smsIrClient;
+    private final SmsOtpService otpService;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
     public AuthController(UserService userService,
                           PasswordRecoveryService recoveryService,
-                          DaoAuthenticationProvider authenticationProvider) {
+                          DaoAuthenticationProvider authenticationProvider,
+                          SmsIrClient smsIrClient,
+                          SmsOtpService otpService) {
         this.userService = userService;
         this.recoveryService = recoveryService;
         this.authenticationProvider = authenticationProvider;
+        this.smsIrClient = smsIrClient;
+        this.otpService = otpService;
     }
 
     @GetMapping("/login")
-    public String login(Authentication authentication) {
+    public String login(Authentication authentication,
+                        HttpServletRequest request,
+                        Model model,
+                        @RequestParam(required = false) String sms,
+                        @RequestParam(required = false) String mode) {
         if (isLoggedIn(authentication)) {
             return "redirect:/dashboard";
+        }
+        boolean smsTab = !"password".equals(mode) && sms != null;
+        model.addAttribute("smsTab", smsTab);
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object pending = session.getAttribute(SmsLoginController.SESSION_MOBILE);
+            if (pending instanceof String mobile && !mobile.isBlank()) {
+                SmsLoginController.populateCodeStep(model, mobile, otpService.expiresAt(mobile));
+            }
         }
         return "auth/login";
     }
@@ -81,15 +109,21 @@ public class AuthController {
         }
         if (!result.hasFieldErrors("mobile")) {
             try {
-                form.setMobile(MobileNumbers.normalizeOptional(form.getMobile()));
+                form.setMobile(MobileNumbers.normalizeRequired(form.getMobile()));
             } catch (IllegalArgumentException e) {
                 result.rejectValue("mobile", "invalid", e.getMessage());
             }
+        }
+        if (!result.hasFieldErrors("mobile") && form.getMobile() != null
+                && userService.mobileTakenByActiveUser(form.getMobile())) {
+            result.rejectValue("mobile", "duplicate",
+                    "این شماره موبایل قبلاً برای یک حساب فعال ثبت شده است");
         }
         if (result.hasErrors()) {
             return "auth/register";
         }
         User user = userService.register(form);
+        sendWelcomeSms(user, redirect);
         // shown exactly once on the next page; only the hash is stored
         redirect.addFlashAttribute("recoveryCode", recoveryService.issueCode(user));
         signIn(user.getUsername(), form.getPassword(), request, response);
@@ -121,6 +155,23 @@ public class AuthController {
             securityContextRepository.saveContext(context, request, response);
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
+        }
+    }
+
+    /** Welcome SMS must never roll back a successful registration. */
+    private void sendWelcomeSms(User user, RedirectAttributes redirect) {
+        if (user.getMobile() == null || user.getMobile().isBlank()) {
+            return;
+        }
+        try {
+            smsIrClient.sendWelcome(user.getMobile(), user.getDisplayName());
+            log.info("Welcome SMS sent to {} ({})", user.getUsername(),
+                    SmsIrClient.mask(user.getMobile()));
+        } catch (RuntimeException e) {
+            log.warn("Welcome SMS failed for user {} ({}): {}",
+                    user.getUsername(), SmsIrClient.mask(user.getMobile()), e.getMessage(), e);
+            redirect.addFlashAttribute("smsWarning",
+                    "ثبت‌نام انجام شد، اما پیامک خوش‌آمد ارسال نشد: " + e.getMessage());
         }
     }
 

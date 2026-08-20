@@ -30,6 +30,9 @@ public class SiteUrl {
         if (path == null || path.isBlank()) {
             path = "/";
         }
+        if (path.length() > 1 && path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
         return base(request) + path;
     }
 

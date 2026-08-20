@@ -6,6 +6,7 @@ import com.example.myapp.repository.UserRepository;
 import com.example.myapp.service.CommentService;
 import com.example.myapp.service.FileStorageService;
 import com.example.myapp.util.SiteUrl;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -92,15 +93,21 @@ public class GlobalModelAttributes {
      */
     @ModelAttribute("pageRobots")
     public String pageRobots(HttpServletRequest request) {
+        if (request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE) != null) {
+            return "noindex, nofollow";
+        }
         String path = request.getRequestURI();
         if (path == null) {
             return "index, follow";
         }
         if (path.startsWith("/admin")
                 || path.startsWith("/dashboard")
-                || path.startsWith("/storyteller")
+                || path.equals("/storyteller")
+                || path.startsWith("/storyteller/")
                 || path.equals("/login")
+                || path.startsWith("/login/")
                 || path.equals("/register")
+                || path.startsWith("/register/")
                 || path.equals("/forgot-password")
                 || path.equals("/feedback")
                 || path.equals("/error")) {

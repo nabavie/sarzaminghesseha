@@ -19,27 +19,29 @@ public final class MobileNumbers {
      * @throws IllegalArgumentException when non-blank but not a valid Iranian mobile
      */
     public static String normalizeOptional(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return null;
-        }
-        String s = toAsciiDigits(raw.trim()).replaceAll("[\\s\\-()]", "");
-        if (s.isEmpty()) {
-            return null;
-        }
-        if (LOCAL.matcher(s).matches()) {
-            return s;
-        }
-        if (PLUS.matcher(s).matches()) {
-            return "0" + s.substring(3);
-        }
-        if (INTL.matcher(s).matches()) {
-            return "0" + s.substring(2);
-        }
-        throw new IllegalArgumentException(
-                "شماره موبایل معتبر نیست؛ مثلاً ۰۹۱۲۳۴۵۶۷۸۹ را وارد کنید یا خالی بگذارید");
+        return normalize(raw, false);
     }
 
-    private static String toAsciiDigits(String input) {
+    /**
+     * Required Iranian mobile → {@code 09#########}.
+     *
+     * @throws IllegalArgumentException when blank or not a valid Iranian mobile
+     */
+    public static String normalizeRequired(String raw) {
+        return normalize(raw, true);
+    }
+
+    /**
+     * SMS.ir is called with the local {@code 09#########} form.
+     */
+    public static String toSmsIr(String normalized09) {
+        return normalized09;
+    }
+
+    public static String toAsciiDigits(String input) {
+        if (input == null) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder(input.length());
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
@@ -52,5 +54,31 @@ public final class MobileNumbers {
             }
         }
         return sb.toString();
+    }
+
+    private static String normalize(String raw, boolean required) {
+        if (raw == null || raw.isBlank()) {
+            if (required) {
+                throw new IllegalArgumentException("شماره موبایل را وارد کنید");
+            }
+            return null;
+        }
+        String s = toAsciiDigits(raw.trim()).replaceAll("[\\s\\-()]", "");
+        if (s.isEmpty()) {
+            if (required) {
+                throw new IllegalArgumentException("شماره موبایل را وارد کنید");
+            }
+            return null;
+        }
+        if (LOCAL.matcher(s).matches()) {
+            return s;
+        }
+        if (PLUS.matcher(s).matches()) {
+            return "0" + s.substring(3);
+        }
+        if (INTL.matcher(s).matches()) {
+            return "0" + s.substring(2);
+        }
+        throw new IllegalArgumentException("شماره موبایل معتبر نیست؛ مثلاً ۰۹۱۲۳۴۵۶۷۸۹ را وارد کنید");
     }
 }

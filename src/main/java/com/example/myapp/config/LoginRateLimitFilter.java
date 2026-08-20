@@ -26,11 +26,26 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "/login".equals(request.getServletPath())
-                && loginAttempts.isBanned(request.getRemoteAddr(), request.getParameter("username"))) {
+        if ("POST".equalsIgnoreCase(request.getMethod()) && isLoginAttempt(request)
+                && loginAttempts.isBanned(request.getRemoteAddr(), identity(request))) {
             response.sendRedirect(request.getContextPath() + "/login?banned");
             return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    private static boolean isLoginAttempt(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return "/login".equals(path)
+                || "/login/sms/send".equals(path)
+                || "/login/sms/verify".equals(path);
+    }
+
+    private static String identity(HttpServletRequest request) {
+        String username = request.getParameter("username");
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+        return request.getParameter("mobile");
     }
 }

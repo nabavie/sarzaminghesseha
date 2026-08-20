@@ -24,7 +24,8 @@ public class RegistrationForm {
     @NotBlank(message = "لطفاً رمز عبور را دوباره بنویسید")
     private String confirmPassword;
 
-    /** Optional; validated/normalized in AuthController via MobileNumbers. */
+    /** Required; validated/normalized in AuthController via MobileNumbers. */
+    @NotBlank(message = "شماره موبایل را وارد کنید")
     @Size(max = 20, message = "شماره موبایل خیلی طولانی است")
     private String mobile;
 

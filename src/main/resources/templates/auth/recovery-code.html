@@ -27,6 +27,10 @@
                      style="letter-spacing: 2px; user-select: all;"
                      th:text="${recoveryCode}">XXXX-XXXX-XXXX-XXXX</div>
 
+                <div class="alert alert-warning text-start" th:if="${smsWarning != null}" th:text="${smsWarning}">
+                    پیامک ارسال نشد
+                </div>
+
                 <div class="alert alert-warning text-start small">
                     ⚠️ این کد فقط <strong>همین یک بار</strong> نشان داده می‌شود و جای دیگری ذخیره نیست.
                     آن را همین حالا یادداشت کنید یا یک عکس از این صفحه بگیرید و جای امنی نگه دارید.
