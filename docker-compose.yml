@@ -56,7 +56,7 @@ services:
       SEED_TEST_ADMIN_PASSWORD: ${SEED_TEST_ADMIN_PASSWORD}
       SEED_STORYTELLER_PASSWORD: ${SEED_STORYTELLER_PASSWORD}
       MEDIA_TOKEN_SECRET: ${MEDIA_TOKEN_SECRET}
-      SMS_API_KEY: ${SMS_API_KEY:aoq4HhI5IpVCaTNLhExbKjC3ejwhqEMh1C8zOUGAsNOOGUN3}
+      SMS_API_KEY: ${SMS_API_KEY}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://sarzaminghesseha.com}
       SERVER_PORT: 8081
       # Belt-and-suspenders if the prod profile file is missing from an older image
